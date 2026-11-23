@@ -7,17 +7,22 @@ the grader's verdict (design, section 4.4). Two modes:
 - base: sources only (tool results, arguments, question, instructions, constants);
 - calc: also any number one calculator operation could produce from grounded inputs (sum or
   mean of a contiguous window of one series; difference, ratio or percent change of two
-  values, which may be window aggregates). An upper bound: it assumes the model would
-  always call the calculator when it needed to.
+  same-unit values, which may be window aggregates; a percentage of a value; bbl/d to
+  barrels in a year). An upper bound: it assumes the model would always call the calculator
+  when it needed to. It says nothing about catches: with free windows and pairs, almost any
+  percentage comes out of some combination.
 
 A coincidence probe multiplies each stated number by 0.83 and 1.17 and counts how many
 wrong values would still be grounded, per mode.
 
     uv run python -m agent_evals.replay_guardrail
+    uv run python -m agent_evals.replay_guardrail --sensitivity   # tolerance variants
 
 Writes agent_evals/results/replay_<time>.md (summary) and .csv (every flagged number).
 """
 
+import argparse
+import asyncio
 import bisect
 import csv
 import json
@@ -27,10 +32,10 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
-from anp_mcp.server import DATASET_REVISION, INSTRUCTIONS
+from anp_mcp.server import DATASET_REVISION, INSTRUCTIONS, mcp
 
 from anp_agent.guardrail.extract import PERCENT, QUANTITY, Reading, extract
-from anp_agent.guardrail.match import candidates, check, close, ground_number
+from anp_agent.guardrail.match import DEFAULT, Policy, candidates, check, close, ground_number
 from anp_agent.guardrail.sources import Sources, build_sources
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -63,7 +68,8 @@ def load() -> list[dict]:
 class Calculator:
     """Every result of one calculator operation over grounded inputs (upper bound)."""
 
-    def __init__(self, sources: Sources):
+    def __init__(self, sources: Sources, policy: Policy = DEFAULT):
+        self.policy = policy
         pool = [Value(s.value, s.unit, s.label) for s in sources.numbers
                 if s.origin != "constant" and s.unit]
         series: dict[str, list] = {}
@@ -101,15 +107,29 @@ class Calculator:
         slack = max(r.place, 0.02 * v if hedged else 0.0) + 1e-9
         # a window aggregate on its own
         for a in self._near(self.agg_keys, self.aggregates, v - slack, v + slack):
-            if unit in (None, a.unit) and close(r, a.value, hedged):
+            if unit in (None, a.unit) and close(r, a.value, hedged, self.policy):
                 return a.label
         for a in self.operands:
             # difference b - a, either order; a difference of percentages is in pp
             if unit in (None, a.unit) or (unit == "pp" and a.unit == "%"):
                 for target in (a.value + v, a.value - v):
                     for b in self._near(self.keys, self.operands, target - slack, target + slack):
-                        if b is not a and b.unit == a.unit and close(r, b.value - a.value, hedged):
+                        if b is not a and b.unit == a.unit and close(
+                                r, b.value - a.value, hedged, self.policy):
                             return f"difference({b.label}, {a.label})"
+            # a percentage of a value: a% x b
+            if a.unit == "%" and a.value > 0 and unit != "%":
+                target = v * 100 / a.value
+                width = slack * 100 / a.value
+                for b in self._near(self.keys, self.operands, target - width, target + width):
+                    if b.unit not in ("%", None) and unit in (None, b.unit) and close(
+                            r, a.value * b.value / 100, hedged, self.policy):
+                        return f"multiply({a.label}, {b.label})"
+            # bbl/d to barrels in a year
+            if a.unit == "bbl/d" and unit in (None, "bbl"):
+                for days in (365, 366):
+                    if close(r, a.value * days, hedged, self.policy):
+                        return f"convert({a.label}, year of {days} days)"
             if a.value <= 0 or unit != "%":
                 continue
             # ratio 100 * b / a, and percent change 100 * (b / a - 1), of same-unit values
@@ -121,12 +141,12 @@ class Calculator:
                     if b is a or b.value <= 0 or b.unit != a.unit:
                         continue
                     result = 100 * b.value / a.value - (0 if name == "ratio" else 100)
-                    if close(r, abs(result), hedged):
+                    if close(r, abs(result), hedged, self.policy):
                         return f"{name}({b.label}, {a.label})"
         return None
 
 
-def probe(answer: str, sources: Sources, derive) -> tuple[int, int]:
+def probe(answer: str, sources: Sources, derive, policy: Policy) -> tuple[int, int]:
     """(probes grounded by chance, probes made): stated numbers scaled by FACTORS."""
     cands = candidates(sources)
     hits = total = 0
@@ -134,9 +154,10 @@ def probe(answer: str, sources: Sources, derive) -> tuple[int, int]:
         if c.kind not in (QUANTITY, PERCENT):
             continue
         for f in FACTORS:
-            wrong = tuple(Reading(r.value * f, r.place) for r in c.readings)
+            wrong = tuple(Reading(r.value * f, r.place, r.literal) for r in c.readings)
             total += 1
-            hits += ground_number(wrong, c.unit, c.hedged, None, cands, derive) is not None
+            hits += ground_number(wrong, c.unit, c.hedged, None, cands, derive,
+                                  policy) is not None
     return hits, total
 
 
@@ -152,16 +173,22 @@ def group(r: dict) -> str:
     return "failed: wrong_number/ungrounded" if r["error_type"] in CAUGHT else "failed: other"
 
 
-def run() -> tuple[str, list[dict]]:
-    records = load()
+def server_schemas() -> dict[str, dict]:
+    """Input schemas as the server lists them (the same listing a client receives)."""
+    return {t.name: t.input_schema for t in asyncio.run(mcp.list_tools())}
+
+
+def replay(records: list[dict], policy: Policy = DEFAULT):
+    """(rows, probes, flagged numbers) for both modes."""
+    schemas = server_schemas()
     rows, flagged_numbers = [], []
     probes = {m: [0, 0] for m in ("base", "calc")}
     for r in records:
-        sources = build_sources(r["question"], r["calls"], INSTRUCTIONS)
-        calc = Calculator(sources)
+        sources = build_sources(r["question"], r["calls"], INSTRUCTIONS, schemas)
+        calc = Calculator(sources, policy)
         row = {"group": group(r), "model": r["model"], "truncated": bool(sources.truncated)}
         for mode, derive in (("base", None), ("calc", calc)):
-            report = check(r["answer"], sources, derive)
+            report = check(r["answer"], sources, derive, policy)
             row[mode] = not report.ok
             row[f"{mode}_n"] = len(report.ungrounded)
             row[f"{mode}_cited"] = any(cited(v.claim.text, r["reason"]) for v in report.ungrounded)
@@ -176,12 +203,45 @@ def run() -> tuple[str, list[dict]]:
             if mode == "calc":
                 row["derived"] = sum(1 for v in report.verdicts
                                      if v.grounded and v.source and v.source.startswith(
-                                         ("sum(", "mean(", "difference(", "ratio(", "percent_")))
-            hits, total = probe(r["answer"], sources, derive)
+                                         ("sum(", "mean(", "difference(", "ratio(", "percent_",
+                                          "multiply(", "convert(")))
+            hits, total = probe(r["answer"], sources, derive, policy)
             probes[mode][0] += hits
             probes[mode][1] += total
         rows.append(row)
-    return summary(rows, probes, flagged_numbers), flagged_numbers
+    return rows, probes, flagged_numbers
+
+
+def run() -> tuple[str, list[dict]]:
+    rows, probes, flagged = replay(load())
+    return summary(rows, probes, flagged), flagged
+
+
+VARIANTS = [
+    ("trailing zeros as rounding (current)", Policy()),
+    ("trailing zeros as rounding, cap 5%", Policy(max_rel=0.05)),
+    ("trailing zeros as rounding, cap 2%", Policy(max_rel=0.02)),
+    ("trailing zeros not rounding", Policy(trailing_zeros=False)),
+]
+
+
+def sensitivity() -> str:
+    """False alarms, catches and coincidence for each tolerance variant (complete results)."""
+    records = load()
+    lines = [("| tolerance | mode | false alarms (of 102) | catches (of 11) | cited | "
+              "coincidence |"), "|---|---|---|---|---|---|"]
+    for name, policy in VARIANTS:
+        rows, probes, _ = replay(records, policy)
+        clean = [r for r in rows if not r["truncated"]]
+        passed = [r for r in clean if r["group"] == "passed"]
+        caught = [r for r in clean if r["group"] == "failed: wrong_number/ungrounded"]
+        for mode in ("base", "calc"):
+            hits, total = probes[mode]
+            lines.append(
+                f"| {name} | {mode} | {sum(r[mode] for r in passed)} | "
+                f"{sum(r[mode] for r in caught)} | {sum(r[f'{mode}_cited'] for r in caught)} | "
+                f"{hits / max(1, total):.1%} |")
+    return "\n".join(lines)
 
 
 def table(rows: list[dict], mode: str) -> list[str]:
@@ -233,6 +293,11 @@ def summary(rows: list[dict], probes: dict, flagged: list[dict]) -> str:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--sensitivity", action="store_true", help="tolerance variants only")
+    if parser.parse_args().sensitivity:
+        print(sensitivity())
+        return
     text, flagged = run()
     OUT.mkdir(exist_ok=True)
     stamp = f"{datetime.now(UTC):%Y%m%dT%H%M%SZ}"

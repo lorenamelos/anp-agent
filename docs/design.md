@@ -163,14 +163,22 @@ arguments. It runs again on the regenerated draft; the second result is final.
    `active_wells` → wells, `months_*`/`year` → count). Numbers inside string fields (e.g.
    `what_it_shows`) are also taken, unit unknown.
 2. Numbers in the tool **arguments** (e.g. `months=6`), so "nos últimos 6 meses" is grounded.
+   Arguments include the defaults from the tool's `input_schema`, as the server lists it,
+   since the tool ran with them (e.g. `start="2024-01"` of `field_group_production`).
 3. Numbers in the **question**: any number the user wrote counts as grounded, whatever its
    kind (quantity, date, count), e.g. "1 milhão de barris" in "quando Búzios passou de
    1 milhão de barris por dia?".
 4. Numbers in the **server instructions** (e.g. 2005, the dataset version, "two months"),
    matching grader v3, which accepts them as a source.
-5. A short whitelist of constants: 1 bbl = 0.158987 m³ and the conversion factors below.
-6. Outputs of the local **calculator** (section 1.4). Its inputs must themselves be grounded
-   in 1–5 or in earlier calculator outputs (transitive provenance), so it cannot launder a
+5. A short whitelist of constants, each with its own unit so that it grounds only numbers of
+   that kind: the factor 0.158987 and "1 bbl" (both sides of "1 bbl = 0.158987 m³"),
+   6.2898 bbl (one m³), and days in a period (28–31, 365, 366; they ground "× 31 dias" but
+   never "31%" or "31 poços").
+6. One tool-specific date rule: the months of the two windows `top_changes` compares are
+   derived from its `latest_month` and `window_months` (the 2 × window months up to and
+   including `latest_month`), so "abr–set/2026 vs out/2025–mar/2026" is grounded.
+7. Outputs of the local **calculator** (section 1.4). Its inputs must themselves be grounded
+   in 1–6 or in earlier calculator outputs (transitive provenance), so it cannot launder a
    number taken from memory.
 
 **Extraction** (pure function, `text -> list[Claim]`):
@@ -219,7 +227,10 @@ date span, not a range. A range is grounded if **either**:
    has place value `p` (for "1,06 milhão", p = 10,000; for "26,3%", p = 0.1; for
    "1.056.771", p = 1), the claim matches if `s` rounds **or truncates** to `v` at place `p`
    (|s − v| ≤ p/2, or 0 ≤ s − v < p for a positive truncation). Source numbers are already
-   rounded by the server, so exact displays match exactly.
+   rounded by the server, so exact displays match exactly. An integer of 1,000 or more takes
+   its trailing zeros as rounding ("40.000" → p = 10,000). The matcher's `Policy` can turn
+   that off or cap the tolerance relative to the value (never below the last written digit);
+   the replay measured these variants and they barely change the results (section 4.4).
 3. **Hedge words** ("cerca de", "aproximadamente", "quase", "about", "~", "around") widen the
    tolerance to max(rounding rule, 2% relative).
 4. **Sign.** "+26,3%", "queda de 26,3%" and "−26,3%" all match a source of −26.3 or +26.3
@@ -244,15 +255,17 @@ A deterministic tool offered to the model next to the anp-mcp tools. It lives in
 repository; anp-mcp is not changed.
 
 ```text
-calculate(operation, values, unit=None, to_unit=None, month=None)
-  operation: sum | mean | difference | ratio | percent_change | convert
+calculate(operation, values, unit=None, to_unit=None, month=None, year=None, percent=False)
+  operation: sum | mean | difference | ratio | percent_change | multiply | convert
   values:    list of numbers, each copied from a tool result of this question
   -> {"operation", "inputs", "result", "unit"}
 ```
 
 - `mean` is the simple mean (as the eval ground truth computes yearly field averages);
   `difference` and `percent_change` take two values, (b − a) and 100·(b/a − 1); `ratio` takes
-  two values; `convert` covers bbl/d → m³/d and bbl/d → bbl in `month` (days of that month).
+  two values; `multiply` takes two values, and with `percent=True` the first one is a
+  percentage (0.517 % of 1,749,888 bbl/d = 9,047 bbl/d); `convert` covers bbl/d → m³/d,
+  bbl/d → bbl in `month` (days of that month) and bbl/d → bbl in `year` (365 or 366 days).
 - **Input check at call time**: each input must match a source (rules of section 1.3, exact
   or rounding tolerance, no hedge widening). An ungrounded input makes the call fail with a
   `tool_result` error naming the value, so the model learns immediately; the failed call
@@ -564,3 +577,7 @@ anp-agent/
 | D12 | The agent answers in the language of the question; deterministic texts follow it. |
 | D13 | v1 interface: command line only. |
 | D14 | Licence: MIT. |
+| D15 | Calculator operations also include `multiply` (with a percentage option) and `convert` to barrels in a year. |
+| D16 | "1 bbl" in "1 bbl = 0.158987 m³" is part of the conversion constant. |
+| D17 | Tool arguments include the defaults of the tool's input schema as the server lists it. |
+| D18 | `top_changes` window months are derived deterministically from `latest_month` and `window_months`. |

@@ -103,3 +103,24 @@ def test_truncated_result_is_scanned_and_reported():
 def test_garbage_results_do_not_crash(bad):
     s = build_sources("q", [{"name": "x", "args": {}, "result": bad, "is_error": False}])
     assert s.truncated == [1]
+
+
+def test_schema_defaults_are_arguments():
+    schema = {"properties": {"field_group": {"type": "string"},
+                             "start": {"default": "2024-01"}, "end": {"default": "2026-12"}}}
+    c = call("field_group_production", FIELD, field_group="MERO", end="2026-09")
+    s = build_sources("q", [c], schemas={"field_group_production": schema})
+    assert (2024, 1) in s.months  # default start, not in the call's own arguments
+    assert (2026, 12) not in s.months  # the call's own end replaces the default
+
+
+def test_top_changes_windows():
+    s = build_sources("q", [call("top_changes", TOP, months=6)])
+    # latest 2026-09, window 6: Oct 2025 .. Sep 2026
+    assert (2025, 10) in s.months and (2026, 3) in s.months
+    assert (2025, 9) not in s.months
+
+
+def test_one_barrel_constant():
+    s = build_sources("q", [])
+    assert any(n.value == 1 and n.unit == "bbl" and n.origin == "constant" for n in s.numbers)

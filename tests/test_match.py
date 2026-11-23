@@ -107,3 +107,26 @@ def test_report_lists_ungrounded_claims():
     report = check("Búzios: 1.197.657 bbl/d; Mero: 777.777 bbl/d", sources("q", FIELD))
     assert not report.ok
     assert [v.claim.text for v in report.ungrounded] == ["777.777 bbl/d"]
+
+
+def test_one_barrel_definition_is_grounded():
+    assert all(grounded("Usei 1 bbl = 0,158987 m³ e 1 barril ≈ 0,159 m³", FIELD))
+
+
+def test_policy_trailing_zeros_and_cap():
+    from anp_agent.guardrail.match import Policy
+
+    s = sources("q", {"unit": "bbl/d", "months": [{"month": "2026-09", "petroleum_bpd": 43210.0}]})
+    loose = check("40.000 bbl/d", s)  # trailing zeros: 40,000 covers 35,000..50,000
+    strict = check("40.000 bbl/d", s, policy=Policy(trailing_zeros=False))
+    capped = check("40.000 bbl/d", s, policy=Policy(max_rel=0.05))  # at most 2,000 either way
+    assert loose.ok and not strict.ok and not capped.ok
+    # the cap never goes below the last written digit: "0,5%" still covers 0.45..0.6
+    s2 = sources("q", {"x_pct": 0.52})
+    assert check("0,5%", s2, policy=Policy(max_rel=0.05)).ok
+
+
+def test_day_constants_only_ground_numbers_without_unit():
+    assert all(grounded("multipliquei por 31 dias", FIELD))
+    assert not all(grounded("Búzios subiu 31%", FIELD))
+    assert not all(grounded("Búzios tinha 30 poços", FIELD))

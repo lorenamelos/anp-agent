@@ -4,6 +4,10 @@ Built from the tool results of this question, the tool arguments, the question i
 server instructions and a few constants (design, section 1.3). Each tool number keeps its
 path, a unit inferred from its key, and the month (or complete year) of its row, which the
 matcher needs for bbl/d -> bbl conversions and R5 needs for recent months.
+
+Arguments include the defaults from the tool's input schema, as the server lists it, since
+the tool ran with them. One tool-specific rule: the months of the two windows that
+top_changes compares are derived from its latest_month and window_months.
 """
 
 import calendar
@@ -14,7 +18,11 @@ from dataclasses import dataclass, field
 from anp_agent.guardrail.extract import COUNT, DATE, PERCENT, QUANTITY, RANGE, extract
 
 BBL_TO_M3 = 0.158987  # 1 barrel = 0.158987 m³
-CONSTANTS = [BBL_TO_M3, 28, 29, 30, 31, 365, 366]  # conversion factor, days in a period
+# Conversion factors and days in a period. Each has its own unit, so a day count never
+# grounds "30%" or "31 poços"; claims without a unit still match them ("x 31 dias").
+# "1 bbl" is the left side of "1 bbl = 0.158987 m³", and 6.2898 bbl is one m³.
+CONSTANTS = [(BBL_TO_M3, "factor"), (1 / BBL_TO_M3, "bbl"), (1, "bbl"),
+             *((d, "days") for d in (28, 29, 30, 31, 365, 366))]
 MONTH_RE = re.compile(r"^((?:19|20)\d{2})-(0[1-9]|1[0-2])$")
 KEY_NUMBER_RE = re.compile(r"(\d+)(pct)?")  # "months_outside_1pct" -> 1 %
 PAIR_RE = re.compile(r'"(\w+)":\s*(?:"((?:[^"\\]|\\.)*)"|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))')
@@ -40,8 +48,8 @@ class Sources:
     truncated: list[int] = field(default_factory=list)  # calls whose result was not JSON
 
     def add_constants(self) -> None:
-        for c in CONSTANTS:
-            self.numbers.append(Source(c, None, f"constant {c}", "constant"))
+        for value, unit in CONSTANTS:
+            self.numbers.append(Source(value, unit, f"constant {value:g}", "constant"))
 
     def add_text(self, text: str, origin: str, label: str | None = None) -> None:
         """Numbers and dates written in free text (question, instructions, string fields)."""
@@ -60,26 +68,42 @@ class Sources:
                     for r in bound:
                         self.numbers.append(Source(r.value, c.unit, label, origin))
 
-    def add_args(self, index: int, args: dict) -> None:
-        for key, value in args.items():
+    def add_args(self, index: int, args: dict, schema: dict | None = None) -> None:
+        """Arguments as the tool ran them: the call's own, then the schema's defaults."""
+        defaults = {k: p["default"] for k, p in ((schema or {}).get("properties") or {}).items()
+                    if p.get("default") is not None and k not in args}
+        for key, value in [*args.items(), *defaults.items()]:
+            label = f"call {index}: args.{key}" + (" (default)" if key in defaults else "")
             if isinstance(value, bool):
                 continue
             if isinstance(value, int | float):
-                self.numbers.append(Source(float(value), None, f"call {index}: args.{key}", "args"))
+                self.numbers.append(Source(float(value), None, label, "args"))
             elif isinstance(value, str):
                 self._add_month(value)
-                self.add_text(value, "args", f"call {index}: args.{key}")
+                self.add_text(value, "args", label)
 
-    def add_result(self, index: int, result: dict | str) -> None:
-        """A tool result, as a parsed dict or as the text the model saw."""
+    def add_top_changes_windows(self, result: dict) -> None:
+        """The 2 x window_months months before and including latest_month."""
+        latest, window = result.get("latest_month"), result.get("window_months")
+        if not (isinstance(latest, str) and MONTH_RE.match(latest) and isinstance(window, int)):
+            return
+        y, m = int(latest[:4]), int(latest[5:])
+        for back in range(2 * window):
+            yy, mm = divmod(y * 12 + m - 1 - back, 12)
+            self.months.add((yy, mm + 1))
+            self.years.add(yy)
+
+    def add_result(self, index: int, result: dict | str) -> dict | None:
+        """A tool result, as a parsed dict or as the text the model saw. Returns the dict."""
         if isinstance(result, str):
             try:
                 result = json.loads(result)
             except json.JSONDecodeError:
                 self.truncated.append(index)
                 self._scan(index, result)
-                return
+                return None
         self._walk(index, result, "", {})
+        return result if isinstance(result, dict) else None
 
     def _walk(self, index: int, node, path: str, row: dict) -> None:
         if isinstance(node, dict):
@@ -161,17 +185,22 @@ def unit_of(key: str) -> str | None:
     return None
 
 
-def build_sources(question: str, calls: list[dict], instructions: str = "") -> Sources:
-    """Sources for one question. Each call: {"name", "args", "result", "is_error"}."""
+def build_sources(question: str, calls: list[dict], instructions: str = "",
+                  schemas: dict[str, dict] | None = None) -> Sources:
+    """Sources for one question. Each call: {"name", "args", "result", "is_error"};
+    `schemas` maps a tool name to its input schema as the server lists it."""
     s = Sources()
     s.add_constants()
     s.add_text(question, "question")
     if instructions:
         s.add_text(instructions, "instructions")
     for i, call in enumerate(calls, start=1):
-        s.add_args(i, call.get("args") or {})
-        if not call.get("is_error"):
-            s.add_result(i, call["result"])
+        s.add_args(i, call.get("args") or {}, (schemas or {}).get(call["name"]))
+        if call.get("is_error"):
+            continue
+        parsed = s.add_result(i, call["result"])
+        if call["name"] == "top_changes" and parsed:
+            s.add_top_changes_windows(parsed)
     for y, _ in s.months:
         s.years.add(y)
     return s

@@ -21,6 +21,7 @@ YEARS = range(1990, 2101)  # a bare 4-digit integer in this range is a year
 class Reading:
     value: float  # absolute value after scaling; the sign is in Claim.direction
     place: float  # value of the last displayed digit, after scaling
+    literal: float | None = None  # last digit actually written, when trailing zeros count
 
 
 @dataclass
@@ -54,7 +55,7 @@ UNITS = [  # (pattern, canonical unit), tried in this order
       r"|barris\s+diários"), "bbl/d"),
     ((r"(?:m³|m3)\s*/\s*(?:d\b|dia\b|day\b)|metros\s+cúbicos\s+por\s+dia"
       r"|cubic\s+met(?:er|re)s\s+per\s+day"), "m3/d"),
-    (r"barris\b|barrels\b|bbl\b", "bbl"),
+    (r"barris\b|barril\b|barrels?\b|bbl\b", "bbl"),
     (r"poços\b|(?:active\s+|producing\s+)?wells\b", "wells"),
 ]
 NUM_RE = re.compile(r"(?<![\w.,/])([+\-−]?)(\d+(?:[.,  ]\d+)*)(?!\w)")
@@ -133,7 +134,7 @@ def _int_reading(digits: str, scale: float) -> tuple[Reading, ...]:
     if value >= 1000:
         zeros = len(digits) - len(digits.rstrip("0"))
         place = scale * 10 ** min(zeros, len(digits) - 1)
-    return (Reading(value, place),)
+    return (Reading(value, place, scale if place != scale else None),)
 
 
 def _dec_reading(s: str, dec: str, scale: float) -> Reading:

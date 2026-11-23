@@ -7,6 +7,10 @@ must appear in the sources; small bare counts are exempt.
 
 "barris" without "por dia" is accepted against bbl/d sources: answers often drop "/d", and
 whether the unit is right is the grader's question, not provenance.
+
+`Policy` sets how loose the displayed precision is: whether trailing zeros count as rounding
+("40.000" -> within 5,000), and an optional cap on that tolerance relative to the value. The
+cap never goes below half of the last digit actually written.
 """
 
 from collections.abc import Callable
@@ -21,6 +25,15 @@ COMPATIBLE = {("bbl", "bbl/d")}
 
 # Optional extra grounding: (reading, unit, hedged) -> label of a derivation, or None.
 Derive = Callable[[Reading, str | None, bool], str | None]
+
+
+@dataclass(frozen=True)
+class Policy:
+    trailing_zeros: bool = True  # "9.000" is rounded to the thousand
+    max_rel: float | None = None  # cap on the rounding tolerance, relative to the value
+
+
+DEFAULT = Policy()
 
 
 @dataclass(frozen=True)
@@ -69,19 +82,25 @@ def units_ok(claim_unit: str | None, source_unit: str | None) -> bool:
     return (claim_unit, source_unit) in COMPATIBLE
 
 
-def close(reading: Reading, source: float, hedged: bool) -> bool:
+def close(reading: Reading, source: float, hedged: bool, policy: Policy = DEFAULT) -> bool:
     """Does `source` display as `reading` (rounded or truncated), or within 2% if hedged?"""
-    v, s, p = reading.value, abs(source), reading.place
+    v, s = reading.value, abs(source)
+    written = reading.literal or reading.place  # last digit actually written
+    p = reading.place if policy.trailing_zeros else written
+    half, window = p / 2, p
+    if policy.max_rel is not None:
+        cap = policy.max_rel * v
+        half, window = max(min(half, cap), written / 2), max(min(window, cap), written)
     eps = 1e-9 * max(1.0, v)
-    if abs(s - v) <= p / 2 + eps or 0 <= s - v < p - eps:
+    if abs(s - v) <= half + eps or 0 <= s - v < window - eps:
         return True
     return hedged and abs(s - v) <= HEDGE_TOLERANCE * s + eps
 
 
 def find(reading: Reading, unit: str | None, hedged: bool, direction: int | None,
-         cands: list[Candidate]) -> Candidate | None:
+         cands: list[Candidate], policy: Policy = DEFAULT) -> Candidate | None:
     for c in cands:
-        if not units_ok(unit, c.unit) or not close(reading, c.value, hedged):
+        if not units_ok(unit, c.unit) or not close(reading, c.value, hedged, policy):
             continue
         if direction and c.value and (c.value > 0) != (direction > 0):
             continue  # a fall stated as a rise, or the reverse
@@ -89,16 +108,18 @@ def find(reading: Reading, unit: str | None, hedged: bool, direction: int | None
     return None
 
 
-def check(answer: str, sources: Sources, derive: Derive | None = None) -> Report:
+def check(answer: str, sources: Sources, derive: Derive | None = None,
+          policy: Policy = DEFAULT) -> Report:
     cands = candidates(sources)
-    verdicts = [_verdict(c, sources, cands, derive) for c in extract(answer)]
+    verdicts = [_verdict(c, sources, cands, derive, policy) for c in extract(answer)]
     return Report(verdicts, truncated=bool(sources.truncated))
 
 
-def ground_number(readings, unit, hedged, direction, cands, derive=None) -> str | None:
+def ground_number(readings, unit, hedged, direction, cands, derive=None,
+                  policy: Policy = DEFAULT) -> str | None:
     """Label of the first source (or derivation) that grounds any reading, else None."""
     for r in readings:
-        if c := find(r, unit, hedged, direction, cands):
+        if c := find(r, unit, hedged, direction, cands, policy):
             return c.label
     if derive:
         for r in readings:
@@ -107,7 +128,7 @@ def ground_number(readings, unit, hedged, direction, cands, derive=None) -> str 
     return None
 
 
-def _verdict(claim: Claim, sources: Sources, cands, derive) -> Verdict:
+def _verdict(claim: Claim, sources: Sources, cands, derive, policy) -> Verdict:
     if claim.kind == COUNT:
         return Verdict(claim, True, "exempt")
     if claim.kind == DATE:
@@ -115,15 +136,16 @@ def _verdict(claim: Claim, sources: Sources, cands, derive) -> Verdict:
               else claim.year in sources.years)
         return Verdict(claim, ok, "date" if ok else None)
     if claim.kind == RANGE:
-        return _range(claim, cands, derive)
-    label = ground_number(claim.readings, claim.unit, claim.hedged, claim.direction, cands, derive)
+        return _range(claim, cands, derive, policy)
+    label = ground_number(claim.readings, claim.unit, claim.hedged, claim.direction, cands,
+                          derive, policy)
     return Verdict(claim, label is not None, label)
 
 
-def _range(claim: Claim, cands, derive) -> Verdict:
+def _range(claim: Claim, cands, derive, policy) -> Verdict:
     low, high = claim.bounds
-    a = ground_number(low, claim.unit, claim.hedged, None, cands, derive)
-    b = ground_number(high, claim.unit, claim.hedged, None, cands, derive)
+    a = ground_number(low, claim.unit, claim.hedged, None, cands, derive, policy)
+    b = ground_number(high, claim.unit, claim.hedged, None, cands, derive, policy)
     if a and b:
         return Verdict(claim, True, f"{a} .. {b}")
     for lo in low:
