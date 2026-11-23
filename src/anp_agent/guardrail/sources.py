@@ -207,13 +207,17 @@ def unit_of(key: str) -> str | None:
 def build_sources(question: str, calls: list[dict], instructions: str = "",
                   schemas: dict[str, dict] | None = None) -> Sources:
     """Sources for one question. Each call: {"name", "args", "result", "is_error"};
-    `schemas` maps a tool name to its input schema as the server lists it."""
+    `schemas` maps a tool name to its input schema as the server lists it. Calculator calls
+    keep their position (the numbering stays the call order) but are left to
+    calculator.add_result, which the caller applies in order after this."""
     s = Sources()
     s.add_constants()
     s.add_text(question, "question")
     if instructions:
         s.add_text(instructions, "instructions")
     for i, call in enumerate(calls, start=1):
+        if call["name"] == "calculate":
+            continue
         s.add_args(i, call.get("args") or {}, (schemas or {}).get(call["name"]))
         if call.get("is_error"):
             continue

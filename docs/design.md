@@ -37,7 +37,7 @@ Facts from the anp-mcp code that shape this design:
 | The server sends `instructions` at initialisation (scope, dataset version, "not covered") | The agent passes them to the model, as desktop clients and the eval harness do; they are also a valid provenance source (as in grader v3) |
 | `serverInfo.version` reports the package version | The agent refuses to start against a server other than 0.1.0 |
 | The harness (`evals/`) is in the repository but **not in the installed package** | Reuse needs the tagged source tree, not only the dependency (section 4) |
-| Claude 5.5 models do not support forced `tool_choice` (noted in `run_evals.py`) | "Answer now without tools" is done by calling the model with **no tools bound**, not with `tool_choice: none` |
+| Claude 5.5 models do not support forced `tool_choice` (noted in `run_evals.py`); `tool_choice: none` is not forced and stays available | "Answer now without tools" keeps the tool definitions and sends `tool_choice: none` (D21): by then the conversation holds `tool_use`/`tool_result` blocks, which need the tool definitions in the request, and the cached prefix (tools + system) stays the same |
 | Haiku v3 runs: mean 7.3k tokens per answer, p95 13k, max 17k; mean 1.7 tool calls, max 6 | Grounds the budget in section 3 |
 
 ## 1. Graph
@@ -60,7 +60,7 @@ START ──> agent ──(tool calls?)──yes──> tools ──────
 
 | Node | What it does | LLM? |
 |---|---|---|
-| `agent` | Calls the model with the system prompt, the server instructions, the MCP tool schemas and the calculator schema. In **final mode** (a cap reached) it calls the model with no tools bound and a note listing what was not fetched. Checks the token budget **before** each call (section 3). | yes |
+| `agent` | Calls the model with the system prompt, the server instructions, the MCP tool schemas and the calculator schema. In **final mode** (a cap reached, or the last allowed LLM call) it calls the model with `tool_choice: none` and, on the first final call, a note listing what was not fetched; a tool request that still comes back gets "not executed" results. Checks the token budget **before** each call (section 3). | yes |
 | `tools` | Executes the tool calls of the last AI message, in order: anp-mcp tools through the MCP session, `calculate` locally (section 1.4). Each kind has its own cap. Every `tool_use` gets a `tool_result` (the API requires it): executed, error, timed out, or "not executed: budget reached". Appends a `ToolRecord` per call. | no |
 | `guardrail` | R1: extracts the numbers from the draft and matches them against the provenance sources (section 1.3). Writes a `GuardrailReport`. | no |
 | `redact` | Replaces each ungrounded number span (number, scale word and unit) with "[não confirmado]" / "[unconfirmed]" and records the removed text for the footer. Deterministic; no new LLM text, so nothing new to verify. | no |
@@ -357,7 +357,7 @@ variable (`ANTHROPIC_API_KEY`, from `.env`, never committed).
 | `max_calculator_calls` | 4 | separate cap |
 | `max_tokens_per_question` | 40,000 | **hard** limit; all billed tokens count alike (input, output, cache read, cache write) |
 | `max_output_tokens` per LLM call | 2,048 | same as the eval harness |
-| `max_llm_calls` | 10 | loop backstop; the last allowed call has no tools (final mode) |
+| `max_llm_calls` | 10 | loop backstop; the last allowed call is in final mode |
 | `recursion_limit` | 25 | LangGraph steps, behind the limits above |
 | `tool_timeout_s`, `question_timeout_s`, `server_init_timeout_s` | 20, 120, 30 | section 2 |
 
@@ -376,19 +376,23 @@ it goes to redaction instead, as section 1.1 specifies.
 request several), separately for anp-mcp calls and calculator calls. If a turn asks for
 3 anp-mcp calls with 2 left, the first 2 run and the third gets "not executed: tool-call
 budget reached"; the call is added to `not_executed` and `final_mode` is set. Next, the
-`agent` node calls the model **without tools**, with a note listing what was not fetched,
-and asks it to answer with what it has and say what is missing.
+`agent` node calls the model with `tool_choice: none` (D21), with a note listing what was not
+fetched, and asks it to answer with what it has and say what is missing.
 
 **Token limit.** Checked in the `agent` node **before** each LLM call, using a projection,
 because a call cannot be stopped halfway:
 
 ```text
 projected = tokens_used + (input tokens of the last call + tokens added since) + max_output_tokens
-projected <= limit            -> normal call
-projected >  limit, but a final call without tools fits -> final mode
-even a final call does not fit -> no LLM call: deterministic answer listing the tool results
-                                  obtained (as returned, unformatted) and what was not done
+projected <= limit            -> normal call (final mode if a cap was reached or it is the
+                                 last allowed LLM call)
+projected >  limit            -> no LLM call: deterministic answer listing the tool results
+                                 obtained (as returned, unformatted) and what was not done
 ```
+
+Since final mode keeps the tool definitions (D21), a final call costs as much as a normal
+one, so the token limit has no "final call without tools" step: when the next call does not
+fit, no call is made. Regeneration is offered only when one more call fits.
 
 The last call's prompt is known exactly from its `usage` (input + cache read + cache write,
 plus its output, which the next call re-sends). Only the messages added since (tool results,
@@ -643,3 +647,4 @@ anp-agent/
 | D18 | `top_changes` window months are derived deterministically from `latest_month` and `window_months`. |
 | D19 | Trailing zeros are written digits by default ("40.000" is exact to the unit); rounding them stays a configurable policy. |
 | D20 | No specific rule for a number grounded only by the default of a tool that was not called; regeneration handles it. |
+| D21 | Final mode keeps the tool definitions and sends `tool_choice: none`, instead of calling the model with no tools bound. |

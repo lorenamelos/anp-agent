@@ -71,7 +71,7 @@ def next_prompt(last: Usage | None, added: int, initial: int) -> int:
 def plan_call(settings: Settings, *, tokens_used: int, llm_calls: int, prompt: int,
               tools_tokens: int, final_mode: bool = False) -> Mode:
     """Which LLM call, if any, fits. `prompt` includes the tool definitions, `tools_tokens`
-    (what a call without tools saves)."""
+    what a call without them would save (0 in the graph: final mode keeps them, D21)."""
     if llm_calls >= settings.max_llm_calls:
         return Mode.NONE
     room = settings.max_tokens_per_question - tokens_used - settings.max_output_tokens
