@@ -2,8 +2,10 @@
 
 Built from the tool results of this question, the tool arguments, the question itself, the
 server instructions and a few constants (design, section 1.3). Each tool number keeps its
-path, a unit inferred from its key, and the month (or complete year) of its row, which the
-matcher needs for bbl/d -> bbl conversions and R5 needs for recent months.
+path, a unit inferred from its key, the month (or complete year) of its row, which the
+matcher needs for bbl/d -> bbl conversions, and the last month the value covers, which R5
+needs for recent months (a month row: its month; a year row: December of that year; anything
+under a top-level `latest_month`: that month).
 
 Arguments include the defaults from the tool's input schema, as the server lists it, since
 the tool ran with them. One tool-specific rule: the months of the two windows that
@@ -25,6 +27,7 @@ CONSTANTS = [(BBL_TO_M3, "factor"), (1 / BBL_TO_M3, "bbl"), (1, "bbl"),
              *((d, "days") for d in (28, 29, 30, 31, 365, 366))]
 MONTH_RE = re.compile(r"^((?:19|20)\d{2})-(0[1-9]|1[0-2])$")
 KEY_NUMBER_RE = re.compile(r"(\d+)(pct)?")  # "months_outside_1pct" -> 1 %
+CALL_RE = re.compile(r"^call (\d+): ")
 PAIR_RE = re.compile(r'"(\w+)":\s*(?:"((?:[^"\\]|\\.)*)"|(-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?))')
 
 
@@ -38,6 +41,13 @@ class Source:
     days: int | None = None  # days of the row's period (month, or complete year)
     series: str | None = None  # same key across the rows of one list, in order
     pos: int | None = None  # position in that series
+    until: str | None = None  # YYYY-MM: last month the value covers, for R5
+    based_on: tuple[int, ...] = ()  # calculator result: the calls its inputs came from
+
+    @property
+    def call(self) -> int | None:
+        """1-based index of the call this number came from, if any."""
+        return call_of(self.label)
 
 
 @dataclass
@@ -107,6 +117,9 @@ class Sources:
 
     def _walk(self, index: int, node, path: str, row: dict) -> None:
         if isinstance(node, dict):
+            latest = node.get("latest_month") if not path else None
+            if isinstance(latest, str) and MONTH_RE.match(latest):
+                row = {"until": latest}
             row = self._row_context(node) or row
             for key, value in node.items():
                 self._key_number(index, key, path)
@@ -128,17 +141,18 @@ class Sources:
                 float(node), unit_of(key), f"call {index}: {path}", "tool",
                 month=row.get("month"), days=row.get("days"),
                 series=f"call {index}: {series}" if series else None,
-                pos=int(m[-1]) if m else None,
+                pos=int(m[-1]) if m else None, until=row.get("until"),
             ))
 
     def _row_context(self, node: dict) -> dict:
         month = node.get("month")
         if isinstance(month, str) and (m := MONTH_RE.match(month)):
             y, mo = int(m.group(1)), int(m.group(2))
-            return {"month": month, "days": calendar.monthrange(y, mo)[1]}
+            return {"month": month, "days": calendar.monthrange(y, mo)[1], "until": month}
         year = node.get("year")
-        if isinstance(year, int) and node.get("complete_year") is True:
-            return {"days": 366 if calendar.isleap(year) else 365}
+        if isinstance(year, int) and not isinstance(year, bool) and 1900 <= year <= 2100:
+            days = (366 if calendar.isleap(year) else 365) if node.get("complete_year") else None
+            return {"days": days, "until": f"{year}-12"}
         return {}
 
     def _key_number(self, index: int, key: str, path: str) -> None:
@@ -171,8 +185,13 @@ class Sources:
                 self.numbers.append(Source(
                     float(number), unit_of(key), f"call {index}: {key}#{pos} (truncated)", "tool",
                     month=row.get("month"), days=row.get("days"),
-                    series=f"call {index}: {key}", pos=pos,
+                    series=f"call {index}: {key}", pos=pos, until=row.get("until"),
                 ))
+
+
+def call_of(label: str) -> int | None:
+    m = CALL_RE.match(label)
+    return int(m.group(1)) if m else None
 
 
 def unit_of(key: str) -> str | None:

@@ -90,7 +90,10 @@ Removido por não ter origem confirmada: "1,2 milhão de bbl/d"
 ```
 
 Sources list every successful call whose output grounded at least one claim of the final
-answer, with its arguments abbreviated; the "removed" line appears only after redaction.
+answer, with its arguments abbreviated (the field group or search text bare, `start..end`,
+other arguments as `key=value`); a calculator result also brings in the calls its inputs came
+from, transitively. The "removed" line appears only after redaction. An answer with no
+grounded number from a call has no sources line.
 
 Language: the system prompt tells the model to answer in the language of the question; the
 deterministic texts (notices, footer, redaction marker) use a small pt/en detector on the
@@ -119,7 +122,7 @@ class Claim(TypedDict):
     unit: str | None          # canonical: "bbl/d", "m3/d", "bbl", "%", "pp", "wells", None
     grounded: bool
     source: str | None        # e.g. "call 2: months[8].petroleum_bpd" or "question"
-    source_month: str | None  # YYYY-MM of the source row, when it has one (for R5)
+    source_until: str | None  # last month the source value covers (for R5, section 1.5)
 
 class GuardrailReport(TypedDict):
     ok: bool
@@ -280,8 +283,12 @@ calculate(operation, values, unit=None, to_unit=None, month=None, year=None, per
 ### 1.5 R5 notice
 
 At start-up the toolbox reads the dataset's latest month (from the warm-up call, section 2).
-If any grounded claim of the final answer has a `source_month` in the **last 3 months** of
-the dataset (ANP re-exports the two months before each release), `finalize` adds: "Os dados
+If any grounded claim of the final answer comes from a value that covers one of the **last
+3 months** of the dataset (ANP re-exports the two months before each release), or is a date
+naming one of them, `finalize` adds the notice below. Each source value records the last
+month it covers (`until`): a month row, its month; a year row, December of that year (so the
+current, incomplete year counts); anything under a top-level `latest_month` (`top_changes`),
+that month; a calculator result, the latest month among its inputs. "Os dados
 dos meses mais recentes (jul–set/2026) ainda podem ser revisados pela ANP."
 
 ## 2. Connection to anp-mcp

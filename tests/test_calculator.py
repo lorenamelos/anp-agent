@@ -87,10 +87,15 @@ def test_bad_arguments(args, message):
 
 def test_results_ground_answers_and_later_calculations():
     s = sources(BUZIOS)
-    mean = calc(s, operation="mean", values=[1179084, 1197657], unit="bbl/d")
+    args = {"operation": "mean", "values": [1179084, 1197657], "unit": "bbl/d"}
+    mean = calculate(args, s)
     assert not check("média de 1.188.370 bbl/d", s).ok  # derived: not grounded yet
-    add_result(s, 2, mean)
-    assert check("média de 1.188.370 bbl/d", s).ok  # truncated 1,188,370.5
+    add_result(s, 2, args, mean)
+    report = check("média de 1.188.370 bbl/d", s)
+    assert report.ok  # truncated 1,188,370.5
+    used = report.verdicts[0].used[0]
+    assert (used.call, used.until) == (2, "2026-09")  # latest month among the inputs
+    assert used.based_on == (1,)  # the call the inputs came from
     # transitive: the mean can now be an input
     out = calc(s, operation="convert", values=[1188370.5], to_unit="m3/d")
     assert out["result"] == pytest.approx(188935.46, abs=0.01)

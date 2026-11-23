@@ -13,7 +13,7 @@ import calendar
 import re
 
 from anp_agent.guardrail.extract import Reading
-from anp_agent.guardrail.match import Policy, candidates, find
+from anp_agent.guardrail.match import Candidate, Policy, candidates, find
 from anp_agent.guardrail.sources import BBL_TO_M3, Source, Sources
 
 NAME = "calculate"
@@ -74,14 +74,10 @@ def calculate(args: dict, sources: Sources) -> dict:
     arity = {"difference": 2, "ratio": 2, "percent_change": 2, "multiply": 2, "convert": 1}
     if op in arity and len(values) != arity[op]:
         raise CalcError(f"{op} takes {arity[op]} value(s), got {len(values)}")
-    units = [unit] * len(values)
-    if op == "multiply" and percent:
-        units[0] = "%"
-    if op == "convert":
-        units[0] = "bbl/d"
+    units = _input_units(args)
     cands = candidates(sources)
     for value, u in zip(values, units, strict=True):
-        if not _grounded(value, u, cands):
+        if _input(value, u, cands) is None:
             raise CalcError(
                 f"{_plain(value)} is not in this question's tool results; call a data tool first "
                 "or copy the value exactly as the tool returned it")
@@ -95,8 +91,17 @@ def _plain(value: float) -> str:
     return f"{value:.10f}".rstrip("0").rstrip(".")
 
 
-def _grounded(value: float, unit: str | None, cands) -> bool:
-    """Is the value, at the last digit the model wrote, in the sources?"""
+def _input_units(args: dict) -> list[str | None]:
+    units = [args.get("unit")] * len(args["values"])
+    if args["operation"] == "multiply" and args.get("percent"):
+        units[0] = "%"
+    if args["operation"] == "convert":
+        units[0] = "bbl/d"
+    return units
+
+
+def _input(value: float, unit: str | None, cands) -> Candidate | None:
+    """The source of the value, at the last digit the model wrote, or None."""
     text = repr(abs(float(value)))
     if "e" in text:  # 1e-05 or 1e+16: no written digit to round at; compare exactly
         place = 0.0
@@ -104,7 +109,7 @@ def _grounded(value: float, unit: str | None, cands) -> bool:
         frac = text.split(".")[1]
         place = 1.0 if frac == "0" else 10.0 ** -len(frac)
     direction = -1 if value < 0 else None
-    return find(Reading(abs(value), place), unit, False, direction, cands, INPUT_POLICY) is not None
+    return find(Reading(abs(value), place), unit, False, direction, cands, INPUT_POLICY)
 
 
 def _compute(op: str, v: list[float], unit: str | None, args: dict, percent: bool):
@@ -141,7 +146,15 @@ def _convert(value: float, args: dict):
     raise CalcError("convert to bbl needs month='YYYY-MM' or year=YYYY")
 
 
-def add_result(sources: Sources, index: int, result: dict) -> None:
-    """Make a calculator result a source for the guardrail and for later calculations."""
+def add_result(sources: Sources, index: int, args: dict, result: dict) -> None:
+    """Make a calculator result a source for the guardrail and for later calculations. It
+    covers up to the latest month any of its inputs covers (R5), and keeps the calls its
+    inputs came from (for the sources footer)."""
+    cands = candidates(sources)
+    inputs = [_input(v, u, cands) for v, u in zip(result["inputs"], _input_units(args),
+                                                     strict=True)]
+    until = max((c.until for c in inputs if c and c.until), default=None)
+    based_on = sorted({n for c in inputs if c for n in (c.call, *c.based_on) if n is not None})
     label = f"call {index}: calculate.{result['operation']}"
-    sources.numbers.append(Source(result["result"], result["unit"], label, "calculator"))
+    sources.numbers.append(Source(result["result"], result["unit"], label, "calculator",
+                                  until=until, based_on=tuple(based_on)))

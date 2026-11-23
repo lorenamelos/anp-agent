@@ -19,7 +19,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from anp_agent.guardrail.extract import COUNT, DATE, RANGE, Claim, Reading, extract
-from anp_agent.guardrail.sources import BBL_TO_M3, Sources
+from anp_agent.guardrail.sources import BBL_TO_M3, Sources, call_of
 
 HEDGE_TOLERANCE = 0.02
 RANGE_MAX_WIDTH = 0.10
@@ -43,6 +43,12 @@ class Candidate:
     value: float
     unit: str | None
     label: str
+    until: str | None = None  # last month the source value covers (R5)
+    based_on: tuple[int, ...] = ()  # calculator result: the calls its inputs came from
+
+    @property
+    def call(self) -> int | None:
+        return call_of(self.label)
 
 
 @dataclass
@@ -50,6 +56,7 @@ class Verdict:
     claim: Claim
     grounded: bool
     source: str | None  # label of the source, "exempt", or None
+    used: tuple[Candidate, ...] = ()  # the source values that grounded it
 
 
 @dataclass
@@ -70,11 +77,13 @@ def candidates(sources: Sources) -> list[Candidate]:
     """Every source value, plus its whitelisted conversions."""
     out = []
     for s in sources.numbers:
-        out.append(Candidate(s.value, s.unit, s.label))
+        out.append(Candidate(s.value, s.unit, s.label, s.until, s.based_on))
         if s.unit == "bbl/d":
-            out.append(Candidate(s.value * BBL_TO_M3, "m3/d", f"{s.label} x {BBL_TO_M3} m3/bbl"))
+            out.append(Candidate(s.value * BBL_TO_M3, "m3/d", f"{s.label} x {BBL_TO_M3} m3/bbl",
+                                 s.until, s.based_on))
             if s.days:
-                out.append(Candidate(s.value * s.days, "bbl", f"{s.label} x {s.days} days"))
+                out.append(Candidate(s.value * s.days, "bbl", f"{s.label} x {s.days} days",
+                                     s.until, s.based_on))
     return out
 
 
@@ -120,14 +129,19 @@ def check(answer: str, sources: Sources, derive: Derive | None = None,
 def ground_number(readings, unit, hedged, direction, cands, derive=None,
                   policy: Policy = DEFAULT) -> str | None:
     """Label of the first source (or derivation) that grounds any reading, else None."""
+    return _ground(readings, unit, hedged, direction, cands, derive, policy)[0]
+
+
+def _ground(readings, unit, hedged, direction, cands, derive, policy):
+    """(label, candidates used) of the first grounding, or (None, ())."""
     for r in readings:
         if c := find(r, unit, hedged, direction, cands, policy):
-            return c.label
+            return c.label, (c,)
     if derive:
         for r in readings:
             if label := derive(r, unit, hedged):
-                return label
-    return None
+                return label, ()
+    return None, ()
 
 
 def _verdict(claim: Claim, sources: Sources, cands, derive, policy) -> Verdict:
@@ -139,17 +153,17 @@ def _verdict(claim: Claim, sources: Sources, cands, derive, policy) -> Verdict:
         return Verdict(claim, ok, "date" if ok else None)
     if claim.kind == RANGE:
         return _range(claim, cands, derive, policy)
-    label = ground_number(claim.readings, claim.unit, claim.hedged, claim.direction, cands,
+    label, used = _ground(claim.readings, claim.unit, claim.hedged, claim.direction, cands,
                           derive, policy)
-    return Verdict(claim, label is not None, label)
+    return Verdict(claim, label is not None, label, used)
 
 
 def _range(claim: Claim, cands, derive, policy) -> Verdict:
     low, high = claim.bounds
-    a = ground_number(low, claim.unit, claim.hedged, None, cands, derive, policy)
-    b = ground_number(high, claim.unit, claim.hedged, None, cands, derive, policy)
+    a, used_a = _ground(low, claim.unit, claim.hedged, None, cands, derive, policy)
+    b, used_b = _ground(high, claim.unit, claim.hedged, None, cands, derive, policy)
     if a and b:
-        return Verdict(claim, True, f"{a} .. {b}")
+        return Verdict(claim, True, f"{a} .. {b}", used_a + used_b)
     for lo in low:
         for hi in high:
             mid = (lo.value + hi.value) / 2
@@ -157,5 +171,5 @@ def _range(claim: Claim, cands, derive, policy) -> Verdict:
                 continue
             for c in cands:
                 if units_ok(claim.unit, c.unit) and lo.value <= abs(c.value) <= hi.value:
-                    return Verdict(claim, True, f"contains {c.label}")
+                    return Verdict(claim, True, f"contains {c.label}", (c,))
     return Verdict(claim, False, None)

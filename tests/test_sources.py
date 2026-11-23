@@ -124,3 +124,12 @@ def test_top_changes_windows():
 def test_one_barrel_constant():
     s = build_sources("q", [])
     assert any(n.value == 1 and n.unit == "bbl" and n.origin == "constant" for n in s.numbers)
+
+
+def test_until_and_call():
+    s = build_sources("q", [call("top_changes", TOP), call("national_production", NATIONAL_YEAR)])
+    assert {(n.until, n.call) for n in by_label(s, "change_bpd")} == {("2026-09", 1)}
+    assert [n.until for n in by_label(s, "years[0].petroleum_bpd")] == ["2024-12"]
+    s = build_sources("q", [call("field_group_production", FIELD)])
+    assert {n.until for n in by_label(s, "petroleum_bpd")} == {"2026-01", "2026-02"}
+    assert all(n.call is None for n in s.numbers if n.origin in ("constant", "question"))
