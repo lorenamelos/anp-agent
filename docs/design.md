@@ -322,9 +322,12 @@ async with AnpToolbox.start(settings) as toolbox:     # one per process (CLI run
   `latest_month` for R5. Its output **never enters the model's context** and is not a
   provenance source: only `latest_month` is kept, for the R5 notice. If the model needs the
   reconciliation, it calls the tool itself, and that call counts toward the budget. CI can
-  set `ANP_MCP_DATA_DIR` to a cached copy.
+  set `ANP_MCP_DATA_DIR` to a cached copy. The warm-up has its own 300 s timeout, since the
+  first download takes far longer than a tool call; a failed warm-up is fatal at `start()`.
 - Lifetime: one session per process, shared by all questions of that process. The graph gets
-  the toolbox from the run context. `AsyncExitStack` closes the session and terminates the
+  the toolbox from the run context. One owner task opens the session, serves the calls in
+  order from a queue and closes it, because the stdio transport's task groups must be entered
+  and left by the same task, while graph nodes may call from other tasks. `AsyncExitStack` closes the session and terminates the
   child process on exit, including on cancellation and Ctrl-C.
 - Calls run sequentially, in the order the model issued them (determinism over latency; the
   tools take milliseconds once the data is cached).
@@ -336,7 +339,7 @@ async with AnpToolbox.start(settings) as toolbox:     # one per process (CLI run
 | Server does not start / `initialize` times out / version mismatch | at `start()` | Fatal before any LLM call; non-zero exit; eval run aborted | n/a |
 | Tool returns `isError` (e.g. bad arguments) | `result.isError` | `tool_result` with `is_error`, model may correct itself | yes |
 | Tool call exceeds timeout (default 20 s) | `asyncio.timeout` around `call_tool` | `tool_result` "timed out", status `timeout`, no automatic retry | yes |
-| Transport broken (child died, broken pipe, EOF) | exception from the session | Restart the server once and retry that call once (tools are read-only, so retry is safe). If it fails again: status `tool_unavailable`, deterministic answer "could not reach the data", no LLM-generated numbers | yes, once |
+| Transport broken (child died, broken pipe, EOF) | exception from the session | Restart the server once and retry that call once (tools are read-only, so retry is safe). If it fails again: the record's status is `transport_error`, later calls fail fast with the same status, and the question's status is `tool_unavailable`, with a deterministic answer "could not reach the data" and no LLM-generated numbers | yes, once |
 | Anthropic API 429 / 5xx | SDK | SDK retries (`max_retries=2`); then status `error` | no |
 | Whole question exceeds wall-clock limit (default 120 s) | `asyncio.timeout` around the graph run | status `error`, partial state logged | n/a |
 
