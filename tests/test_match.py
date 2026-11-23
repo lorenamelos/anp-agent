@@ -117,13 +117,14 @@ def test_policy_trailing_zeros_and_cap():
     from anp_agent.guardrail.match import Policy
 
     s = sources("q", {"unit": "bbl/d", "months": [{"month": "2026-09", "petroleum_bpd": 43210.0}]})
-    loose = check("40.000 bbl/d", s)  # trailing zeros: 40,000 covers 35,000..50,000
-    strict = check("40.000 bbl/d", s, policy=Policy(trailing_zeros=False))
-    capped = check("40.000 bbl/d", s, policy=Policy(max_rel=0.05))  # at most 2,000 either way
-    assert loose.ok and not strict.ok and not capped.ok
+    strict = check("40.000 bbl/d", s)  # default: "40.000" is exact to the unit
+    loose = check("40.000 bbl/d", s, policy=Policy(trailing_zeros=True))  # 35,000..50,000
+    capped = check("40.000 bbl/d", s, policy=Policy(trailing_zeros=True, max_rel=0.05))
+    assert loose.ok and not strict.ok and not capped.ok  # capped: at most 2,000 either way
+    assert check("cerca de 43.000 bbl/d", s).ok  # a hedge still covers round numbers
     # the cap never goes below the last written digit: "0,5%" still covers 0.45..0.6
     s2 = sources("q", {"x_pct": 0.52})
-    assert check("0,5%", s2, policy=Policy(max_rel=0.05)).ok
+    assert check("0,5%", s2, policy=Policy(trailing_zeros=True, max_rel=0.05)).ok
 
 
 def test_day_constants_only_ground_numbers_without_unit():

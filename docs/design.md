@@ -227,10 +227,12 @@ date span, not a range. A range is grounded if **either**:
    has place value `p` (for "1,06 milhão", p = 10,000; for "26,3%", p = 0.1; for
    "1.056.771", p = 1), the claim matches if `s` rounds **or truncates** to `v` at place `p`
    (|s − v| ≤ p/2, or 0 ≤ s − v < p for a positive truncation). Source numbers are already
-   rounded by the server, so exact displays match exactly. An integer of 1,000 or more takes
-   its trailing zeros as rounding ("40.000" → p = 10,000). The matcher's `Policy` can turn
-   that off or cap the tolerance relative to the value (never below the last written digit);
-   the replay measured these variants and they barely change the results (section 4.4).
+   rounded by the server, so exact displays match exactly. Trailing zeros are written digits:
+   "40.000" has p = 1, so a round number needs a hedge word ("cerca de 40.000", rule 3) or
+   must be the exact value. The matcher's `Policy` can instead take the trailing zeros of an
+   integer of 1,000 or more as rounding ("40.000" → p = 10,000), optionally capped relative
+   to the value (never below the last written digit); the replay measured these variants and
+   the default catches one more wrong number with no more false alarms (section 4.4, D19).
 3. **Hedge words** ("cerca de", "aproximadamente", "quase", "about", "~", "around") widen the
    tolerance to max(rounding rule, 2% relative).
 4. **Sign.** "+26,3%", "queda de 26,3%" and "−26,3%" all match a source of −26.3 or +26.3
@@ -263,11 +265,13 @@ calculate(operation, values, unit=None, to_unit=None, month=None, year=None, per
 
 - `mean` is the simple mean (as the eval ground truth computes yearly field averages);
   `difference` and `percent_change` take two values, (b − a) and 100·(b/a − 1); `ratio` takes
-  two values; `multiply` takes two values, and with `percent=True` the first one is a
+  [part, whole] and returns 100·part/whole in %; the difference of two percentages is in
+  percentage points (`pp`), so "fell 2.3%" for a 2.3 pp change is flagged; `multiply` takes two values, and with `percent=True` the first one is a
   percentage (0.517 % of 1,749,888 bbl/d = 9,047 bbl/d); `convert` covers bbl/d → m³/d,
   bbl/d → bbl in `month` (days of that month) and bbl/d → bbl in `year` (365 or 366 days).
-- **Input check at call time**: each input must match a source (rules of section 1.3, exact
-  or rounding tolerance, no hedge widening). An ungrounded input makes the call fail with a
+- **Input check at call time**: each input must match a source (rules of section 1.3) at the
+  last digit the model wrote, with no hedge widening and never taking trailing zeros as
+  rounding. An ungrounded input makes the call fail with a
   `tool_result` error naming the value, so the model learns immediately; the failed call
   still counts toward the calculator cap.
 - Cap: **4 calculator calls per question**, separate from the 6 anp-mcp calls.
@@ -488,6 +492,39 @@ For each mode, against the grader's verdict:
 Plus the list of every flagged number with its answer excerpt, for manual review: a flag on a
 grader-passed answer is not automatically wrong (the grader can miss an unsupported number).
 
+**Results** (114 answers with complete tool results; 102 grader-passed, 11 failed for
+`wrong_number`/`ungrounded`):
+
+| tolerance | mode | false alarms | catches | catches citing the grader's number | coincidence |
+|---|---|---|---|---|---|
+| trailing zeros not rounding (default, D19) | base | 31 | 8 | 6 | 11.8% |
+| trailing zeros not rounding (default, D19) | calc | 1 | 0 | 0 | 50.4% |
+| trailing zeros as rounding | base | 31 | 7 | 5 | 12.8% |
+| trailing zeros as rounding, cap 5% | base | 31 | 7 | 5 | 12.2% |
+| trailing zeros as rounding, cap 2% | base | 31 | 7 | 5 | 11.9% |
+
+With the calculator variants (calc mode) every tolerance gives 1 false alarm and 0 catches.
+The remaining calc false alarm ("I can show the series since 2024", in an answer that did
+not call the tool whose default is 2024) is left to regeneration, with no specific rule
+(D20). The calc mode's 50% coincidence is a property of the emulation (free windows and
+pairs), not of the real calculator, which only adds the results the model asked for.
+
+Coincidence probe: each stated quantity or percentage is multiplied by 0.83 and 1.17, and the
+probe counts how many of these wrong values the base mode would still ground, by the number
+of significant digits written (default tolerance):
+
+| digits written | probes | grounded by chance |
+|---|---|---|
+| 1 | 102 | 79.4% |
+| 2 | 624 | 19.1% |
+| 3 | 532 | 14.7% |
+| 4 or more | 1,196 | 1.0% |
+| all | 2,454 | 11.8% |
+
+This is a known limit of R1 (risk 2): a wrong number written with 1 to 3 significant digits
+("35%", "1,06 milhão") has a real chance of matching some other value in the sources, and no
+tolerance setting changes that; the probe gives the same picture under every variant above.
+
 Caveat: stored tool results are cut at 6,000 characters; records where a result hit the cut
 are reported separately, since a flag there may be an artefact. Stored results are text, so
 the replay parses them as JSON; a result that does not parse is reported, not guessed.
@@ -534,10 +571,13 @@ anp-agent/
 1. **R1 false alarms on correct derived numbers** (averages, shares, m³/d, monthly totals),
    leading to redacted answers that were right. Measured by the replay in 4.4 before any
    LLM spend; reduced by the calculator.
-2. **Coincidental grounding**: with many source numbers, a small percentage or a 2-digit
-   value can match by chance. Mitigated by rounding-based tolerance (tight for precise
-   displays) and no run-time search for derivations; the replay's upper-bound mode measures
-   it.
+2. **Coincidental grounding (known limit)**: R1 has little power on low-precision numbers.
+   With many source numbers, a wrong value written with few significant digits often matches
+   some other source value: in the replay's probe (section 4.4), 79% of wrong 1-digit values,
+   19% of 2-digit and 15% of 3-digit values were grounded by chance, against 1% with 4 or more
+   digits (12% overall). Tolerance settings do not change this. Mitigated only in part by
+   tight rounding, no run-time search for derivations, and the sign/direction check; the
+   eval grader stays the check for these numbers. Stated in the README.
 3. **The model may not call the calculator** when it should, so the replay's upper bound is
    optimistic. The live evals measure the real rate (guardrail triggers before
    regeneration).
@@ -581,3 +621,5 @@ anp-agent/
 | D16 | "1 bbl" in "1 bbl = 0.158987 m³" is part of the conversion constant. |
 | D17 | Tool arguments include the defaults of the tool's input schema as the server lists it. |
 | D18 | `top_changes` window months are derived deterministically from `latest_month` and `window_months`. |
+| D19 | Trailing zeros are written digits by default ("40.000" is exact to the unit); rounding them stays a configurable policy. |
+| D20 | No specific rule for a number grounded only by the default of a tool that was not called; regeneration handles it. |

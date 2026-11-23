@@ -1,7 +1,7 @@
 import json
 
-from agent_evals.replay_guardrail import Calculator, cited, group, load, run
-from anp_agent.guardrail.extract import Reading
+from agent_evals.replay_guardrail import Calculator, cited, digits, group, load, run
+from anp_agent.guardrail.extract import Reading, extract
 from anp_agent.guardrail.sources import build_sources
 
 SERIES = {"unit": "bbl/d", "months": [
@@ -31,6 +31,17 @@ def test_calculator_does_not_mix_units():
     # 2 is a difference of wells (12 - 10), never a percentage or a bbl/d value
     assert c(Reading(2, 1), "bbl/d", False) is None
     assert c(Reading(2, 1), "wells", False).startswith("difference(")
+
+
+def test_digits_written():
+    def first(text):
+        return digits(extract(text)[0].readings[0])
+
+    assert first("35%") == 2
+    assert first("1,06 milhão bbl/d") == 3
+    assert first("26,3%") == 3
+    assert first("1.056.771 bbl/d") == 7
+    assert first("40.000 bbl/d") == 5  # trailing zeros are written digits (default policy)
 
 
 def test_cited_and_group():

@@ -26,6 +26,7 @@ import asyncio
 import bisect
 import csv
 import json
+import math
 import re
 from collections import Counter
 from dataclasses import dataclass
@@ -146,19 +147,33 @@ class Calculator:
         return None
 
 
-def probe(answer: str, sources: Sources, derive, policy: Policy) -> tuple[int, int]:
-    """(probes grounded by chance, probes made): stated numbers scaled by FACTORS."""
+def probe(answer: str, sources: Sources, derive, policy: Policy) -> list[tuple[int, bool]]:
+    """(digits written, grounded by chance) for each stated number scaled by FACTORS."""
     cands = candidates(sources)
-    hits = total = 0
+    out = []
     for c in extract(answer):
-        if c.kind not in (QUANTITY, PERCENT):
+        if c.kind not in (QUANTITY, PERCENT) or not c.readings[0].value:
             continue
         for f in FACTORS:
             wrong = tuple(Reading(r.value * f, r.place, r.literal) for r in c.readings)
-            total += 1
-            hits += ground_number(wrong, c.unit, c.hedged, None, cands, derive,
-                                  policy) is not None
-    return hits, total
+            out.append((digits(c.readings[0]), ground_number(
+                wrong, c.unit, c.hedged, None, cands, derive, policy) is not None))
+    return out
+
+
+def digits(r: Reading) -> int:
+    """Significant digits written: "35%" -> 2, "1,06 milhão" -> 3, "40.000" -> 5."""
+    written = r.literal or r.place
+    return max(1, math.floor(math.log10(r.value) + 1e-9) - math.floor(math.log10(written)) + 1)
+
+
+def coincidence(probes: list[tuple[int, bool]]) -> str:
+    """Probe hit rate overall and by digits written (1, 2, 3, 4+)."""
+    def rate(sub):
+        return f"{sum(h for _, h in sub)}/{len(sub)} ({sum(h for _, h in sub) / max(1, len(sub)):.1%})"
+    parts = [f"{label}: {rate([p for p in probes if lo <= p[0] <= hi])}"
+             for label, lo, hi in (("1 digit", 1, 1), ("2", 2, 2), ("3", 3, 3), ("4+", 4, 99))]
+    return f"{rate(probes)}; by digits written: " + ", ".join(parts)
 
 
 def cited(number: str, reason: str) -> bool:
@@ -182,7 +197,7 @@ def replay(records: list[dict], policy: Policy = DEFAULT):
     """(rows, probes, flagged numbers) for both modes."""
     schemas = server_schemas()
     rows, flagged_numbers = [], []
-    probes = {m: [0, 0] for m in ("base", "calc")}
+    probes = {m: [] for m in ("base", "calc")}
     for r in records:
         sources = build_sources(r["question"], r["calls"], INSTRUCTIONS, schemas)
         calc = Calculator(sources, policy)
@@ -205,9 +220,7 @@ def replay(records: list[dict], policy: Policy = DEFAULT):
                                      if v.grounded and v.source and v.source.startswith(
                                          ("sum(", "mean(", "difference(", "ratio(", "percent_",
                                           "multiply(", "convert(")))
-            hits, total = probe(r["answer"], sources, derive, policy)
-            probes[mode][0] += hits
-            probes[mode][1] += total
+            probes[mode] += probe(r["answer"], sources, derive, policy)
         rows.append(row)
     return rows, probes, flagged_numbers
 
@@ -218,10 +231,10 @@ def run() -> tuple[str, list[dict]]:
 
 
 VARIANTS = [
-    ("trailing zeros as rounding (current)", Policy()),
-    ("trailing zeros as rounding, cap 5%", Policy(max_rel=0.05)),
-    ("trailing zeros as rounding, cap 2%", Policy(max_rel=0.02)),
-    ("trailing zeros not rounding", Policy(trailing_zeros=False)),
+    ("trailing zeros not rounding (default)", Policy()),
+    ("trailing zeros as rounding", Policy(trailing_zeros=True)),
+    ("trailing zeros as rounding, cap 5%", Policy(trailing_zeros=True, max_rel=0.05)),
+    ("trailing zeros as rounding, cap 2%", Policy(trailing_zeros=True, max_rel=0.02)),
 ]
 
 
@@ -236,7 +249,7 @@ def sensitivity() -> str:
         passed = [r for r in clean if r["group"] == "passed"]
         caught = [r for r in clean if r["group"] == "failed: wrong_number/ungrounded"]
         for mode in ("base", "calc"):
-            hits, total = probes[mode]
+            hits, total = sum(h for _, h in probes[mode]), len(probes[mode])
             lines.append(
                 f"| {name} | {mode} | {sum(r[mode] for r in passed)} | "
                 f"{sum(r[mode] for r in caught)} | {sum(r[f'{mode}_cited'] for r in caught)} | "
@@ -281,9 +294,8 @@ def summary(rows: list[dict], probes: dict, flagged: list[dict]) -> str:
         for model in sorted({r["model"] for r in clean}):
             out += [f"- {model}: " + rates([r for r in clean if r["model"] == model], mode)]
         out += ["", f"Answers with a cut tool result ({len(cut)}):", ""] + table(cut, mode)
-        hits, total = probes[mode]
-        out += ["", (f"Coincidence probe: {hits}/{total} wrong values (stated number x 0.83 "
-                     f"or x 1.17) would be grounded ({hits / max(1, total):.1%})."), ""]
+        out += ["", ("Coincidence probe, wrong values (stated number x 0.83 or x 1.17) that "
+                     f"would be grounded: {coincidence(probes[mode])}."), ""]
     out += [(f"Numbers grounded only through a calculator operation (calc mode): "
              f"{sum(r['derived'] for r in rows)}."), ""]
     kinds = Counter((f["mode"], f["kind"]) for f in flagged if not f["truncated"])

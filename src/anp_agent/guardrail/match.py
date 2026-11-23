@@ -8,9 +8,11 @@ must appear in the sources; small bare counts are exempt.
 "barris" without "por dia" is accepted against bbl/d sources: answers often drop "/d", and
 whether the unit is right is the grader's question, not provenance.
 
-`Policy` sets how loose the displayed precision is: whether trailing zeros count as rounding
-("40.000" -> within 5,000), and an optional cap on that tolerance relative to the value. The
-cap never goes below half of the last digit actually written.
+`Policy` sets how loose the displayed precision is. By default the last digit actually written
+sets it ("40.000" is exact to the unit; "cerca de 40.000" gets the 2% hedge). Optionally,
+trailing zeros count as rounding ("40.000" -> within 5,000), with an optional cap relative to
+the value that never goes below half of the last digit written. The replay measured both: the
+default catches one more wrong number with no more false alarms (design, section 4.4).
 """
 
 from collections.abc import Callable
@@ -29,7 +31,7 @@ Derive = Callable[[Reading, str | None, bool], str | None]
 
 @dataclass(frozen=True)
 class Policy:
-    trailing_zeros: bool = True  # "9.000" is rounded to the thousand
+    trailing_zeros: bool = False  # True: "9.000" is rounded to the thousand
     max_rel: float | None = None  # cap on the rounding tolerance, relative to the value
 
 

@@ -7,7 +7,8 @@ as "queda de").
 
 Precision: each reading carries `place`, the value of the last displayed digit after
 scaling ("1,06 milhão" -> 10,000; "26,3%" -> 0.1). An integer of 1,000 or more read without
-decimals takes its trailing zeros as rounding ("9.000" -> 1,000; "300 mil" -> 100,000).
+decimals takes its trailing zeros as rounding ("9.000" -> 1,000; "300 mil" -> 100,000), and
+keeps the last digit actually written in `literal`; the matcher's policy picks one of the two.
 """
 
 import re
