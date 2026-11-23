@@ -177,7 +177,7 @@ async def agent(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
     usage = usage_of(response)
     cost = usd(usage, ctx.settings.model, ctx.prices) or 0.0
     log = {"call": state["llm_calls"] + 1, "mode": mode.value, "projected_prompt": prompt,
-           "actual_prompt": usage.prompt, "output": usage.output}
+           "actual_prompt": usage.prompt, **vars(usage)}
     return {
         "messages": [*extra, response],
         "tokens_used": state["tokens_used"] + usage.total,
