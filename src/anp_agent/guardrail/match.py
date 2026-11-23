@@ -95,7 +95,8 @@ def check(answer: str, sources: Sources, derive: Derive | None = None) -> Report
     return Report(verdicts, truncated=bool(sources.truncated))
 
 
-def _number(readings, unit, hedged, direction, cands, derive) -> str | None:
+def ground_number(readings, unit, hedged, direction, cands, derive=None) -> str | None:
+    """Label of the first source (or derivation) that grounds any reading, else None."""
     for r in readings:
         if c := find(r, unit, hedged, direction, cands):
             return c.label
@@ -115,14 +116,14 @@ def _verdict(claim: Claim, sources: Sources, cands, derive) -> Verdict:
         return Verdict(claim, ok, "date" if ok else None)
     if claim.kind == RANGE:
         return _range(claim, cands, derive)
-    label = _number(claim.readings, claim.unit, claim.hedged, claim.direction, cands, derive)
+    label = ground_number(claim.readings, claim.unit, claim.hedged, claim.direction, cands, derive)
     return Verdict(claim, label is not None, label)
 
 
 def _range(claim: Claim, cands, derive) -> Verdict:
     low, high = claim.bounds
-    a = _number(low, claim.unit, claim.hedged, None, cands, derive)
-    b = _number(high, claim.unit, claim.hedged, None, cands, derive)
+    a = ground_number(low, claim.unit, claim.hedged, None, cands, derive)
+    b = ground_number(high, claim.unit, claim.hedged, None, cands, derive)
     if a and b:
         return Verdict(claim, True, f"{a} .. {b}")
     for lo in low:

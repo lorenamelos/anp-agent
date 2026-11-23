@@ -35,6 +35,7 @@ extend-exclude = ["vendor"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]  # agent_evals is a top-level package, not installed
 markers = [
     "integration: needs the real anp-mcp server and the dataset cache",
     "api: calls the Anthropic API (costs money, opt-in)",

@@ -119,6 +119,7 @@ def test_small_bare_integers_are_counts():
     ("800–900 mil bbl/d", 800_000, 900_000, "bbl/d"),
     ("1,2 milhão ± 50 mil bbl/d", 1_150_000, 1_250_000, "bbl/d"),
     ("entre 10% e 12%", 10, 12, "%"),
+    ("entre cerca de 809 e 876 mil bbl/d", 809_000, 876_000, "bbl/d"),
 ])
 def test_ranges(text, low, high, unit):
     c = only(text)

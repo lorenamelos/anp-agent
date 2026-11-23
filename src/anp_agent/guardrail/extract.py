@@ -97,7 +97,11 @@ DATE_RES = [  # (pattern, group with the year, group with the month number or na
     (re.compile(rf"\b({MONTH_NAME})\.?(?:\s+de\s+|\s*/\s*|\s+|,\s*)((?:19|20)\d{{2}})(?!\w)",
                 re.IGNORECASE), 2, 1),
 ]
-RANGE_OPEN_RE = re.compile(r"\b(entre|between|de|from)\s*$", re.IGNORECASE)
+RANGE_OPEN_RE = re.compile(  # "entre X e Y", also "entre cerca de X e Y"
+    r"\b(entre|between|de|from)\s+(?:cerca\s+de\s+|aproximadamente\s+|about\s+|around\s+"
+    r"|approximately\s+|roughly\s+)?$",
+    re.IGNORECASE,
+)
 RANGE_JOINS = {"entre": {"e"}, "between": {"and"}, "de": {"a", "até", "ate"}, "from": {"to"}}
 BARE_JOINS = {"–", "to", "até", "ate"}  # "X–Y", "X to Y"; "X a Y" only with a unit after Y
 
@@ -223,7 +227,7 @@ def _range(answer: str, text: str, a: Claim, b: Claim) -> Claim | None:
                      hedged=a.hedged, bounds=(
                          tuple(Reading(x.value - y.value, max(x.place, y.place)) for x, y in pairs),
                          tuple(Reading(x.value + y.value, max(x.place, y.place)) for x, y in pairs)))
-    window = max(0, a.start - 12)
+    window = max(0, a.start - 30)
     opener = RANGE_OPEN_RE.search(text[window:a.start])
     start = a.start
     if opener and between in RANGE_JOINS[opener.group(1).lower()]:
