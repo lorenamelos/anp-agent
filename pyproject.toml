@@ -1,0 +1,42 @@
+[project]
+name = "anp-agent"
+version = "0.1.0"
+description = "A LangGraph agent over the anp-mcp server that answers questions on Brazilian oil production, with a provenance check on every number it states."
+readme = "README.md"
+license = "MIT"
+authors = [
+    { name = "Lorena Melo", email = "120689570+lorenamelos@users.noreply.github.com" }
+]
+requires-python = ">=3.13"
+dependencies = [
+    "anp-mcp",
+]
+
+[project.urls]
+Repository = "https://github.com/lorenamelos/anp-agent"
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[tool.uv.sources]
+# Pinned to the release tag; vendor/anp-mcp (git submodule) must be the same commit.
+anp-mcp = { git = "https://github.com/lorenamelos/anp-mcp", tag = "v0.1.0" }
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.6",
+]
+
+[tool.ruff]
+line-length = 100
+extend-exclude = ["vendor"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: needs the real anp-mcp server and the dataset cache",
+    "api: calls the Anthropic API (costs money, opt-in)",
+]
+addopts = "-m 'not integration and not api'"

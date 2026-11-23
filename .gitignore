@@ -1,0 +1,21 @@
+# Environment
+.venv/
+.env
+
+# Caches
+__pycache__/
+*.py[oc]
+.ruff_cache/
+.pytest_cache/
+
+# Build
+build/
+dist/
+*.egg-info
+
+# Run outputs
+logs/
+agent_evals/results/
+
+# macOS
+.DS_Store
