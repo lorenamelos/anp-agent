@@ -397,7 +397,8 @@ fit, no call is made. Regeneration is offered only when one more call fits.
 The last call's prompt is known exactly from its `usage` (input + cache read + cache write,
 plus its output, which the next call re-sends). Only the messages added since (tool results,
 the regeneration feedback) and the first prompt are estimated, on the high side, at 2
-characters per token: JSON full of digits takes more tokens per character than prose, and an
+characters per token plus 50 tokens per added message (the eval pilot measured up to 66
+tokens of fixed per-message cost the text does not show): JSON full of digits takes more tokens per character than prose, and an
 overestimate only moves a call into final mode earlier. The eval run records the estimate
 next to the real input of the following call, to check that it stays on the high side.
 Because the projection includes the full `max_output_tokens`, the 40,000-token limit is

@@ -22,6 +22,10 @@ CALCULATOR = "calculate"
 # Conservative: tool results are JSON full of digits and punctuation, which take more tokens
 # per character than prose. Overestimating only moves a call into final mode earlier.
 CHARS_PER_TOKEN = 2.0
+# Each message added since the last call also carries fixed tokens (role, tool_result
+# wrapper) that its text does not show; the first eval pilot measured up to 66 tokens below
+# the actual prompt for two tool results without this margin.
+MESSAGE_OVERHEAD = 50
 
 
 class Mode(Enum):

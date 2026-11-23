@@ -15,6 +15,7 @@ answer once the run's cost reaches --max-usd. Results: agent_evals/results/<run>
 import argparse
 import asyncio
 import json
+import logging
 import os
 import subprocess
 import sys
@@ -38,6 +39,8 @@ OUT = ROOT / "agent_evals" / "results"
 sys.path.insert(0, str(VENDOR))  # the vendored harness: `evals.*` (design, section 4.1)
 from evals.ground_truth import compute
 from evals.run_evals import INSTRUMENT, RESULT_LIMIT, Costs, grade
+
+logging.getLogger("httpx2").setLevel(logging.WARNING)  # no per-request log lines (SDK 2.x)
 
 TOKEN_KEYS = {"input": "input_tokens", "output": "output_tokens",
               "cache_read": "cache_read_tokens", "cache_write": "cache_write_tokens"}

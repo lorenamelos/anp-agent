@@ -26,7 +26,16 @@ from langgraph.graph.message import add_messages
 from langgraph.runtime import Runtime
 
 from anp_agent import calculator, footer, prompts
-from anp_agent.budget import CALCULATOR, Mode, Usage, admit, estimate_tokens, next_prompt, plan_call
+from anp_agent.budget import (
+    CALCULATOR,
+    MESSAGE_OVERHEAD,
+    Mode,
+    Usage,
+    admit,
+    estimate_tokens,
+    next_prompt,
+    plan_call,
+)
 from anp_agent.config import Settings
 from anp_agent.guardrail.match import check
 from anp_agent.guardrail.redact import redact
@@ -132,7 +141,7 @@ def projected_prompt(ctx: AgentContext, state: AgentState, extra: list[AnyMessag
             estimate_tokens(m.content) for m in messages[1:])
         return next_prompt(None, 0, initial)
     i = max(k for k, m in enumerate(messages) if isinstance(m, AIMessage))
-    added = sum(estimate_tokens(m.content) for m in messages[i + 1:])
+    added = sum(estimate_tokens(m.content) + MESSAGE_OVERHEAD for m in messages[i + 1:])
     return next_prompt(Usage(**last), added, 0)
 
 
