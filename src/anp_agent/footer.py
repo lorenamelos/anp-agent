@@ -36,7 +36,7 @@ TEXT = {
         "for": "para",
         "and": "e",
         "values": ("{n} valor", "{n} valores"),
-        "recent": "Os dados dos meses mais recentes ({months}) ainda podem ser revisados pela ANP.",
+        "recent": "Dados de {months} ainda podem ser revisados pela ANP.",
     },
     EN: {
         "marker": "[unconfirmed]",
@@ -49,7 +49,7 @@ TEXT = {
         "for": "for",
         "and": "and",
         "values": ("{n} value", "{n} values"),
-        "recent": "Data for the most recent months ({months}) may still be revised by ANP.",
+        "recent": "Data for {months} may still be revised by ANP.",
     },
 }
 RECENT_MONTHS = 3  # ANP re-exports the two months before each release (D11)

@@ -288,8 +288,9 @@ If any grounded claim of the final answer comes from a value that covers one of 
 naming one of them, `finalize` adds the notice below. Each source value records the last
 month it covers (`until`): a month row, its month; a year row, December of that year (so the
 current, incomplete year counts); anything under a top-level `latest_month` (`top_changes`),
-that month; a calculator result, the latest month among its inputs. "Os dados
-dos meses mais recentes (jul–set/2026) ainda podem ser revisados pela ANP."
+that month; a calculator result, the latest month among its inputs. The notice is one short
+line, since most questions about current production trigger it: "Dados de jul–set/2026 ainda
+podem ser revisados pela ANP." / "Data for Jul–Sep 2026 may still be revised by ANP."
 
 ## 2. Connection to anp-mcp
 

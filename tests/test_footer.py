@@ -78,9 +78,8 @@ def test_recent_months_and_notice():
     assert recent_months("2026-09") == ["2026-07", "2026-08", "2026-09"]
     assert recent_months("2027-01") == ["2026-11", "2026-12", "2027-01"]
     assert recent_notice("2026-09", "pt") == (
-        "Os dados dos meses mais recentes (jul–set/2026) ainda podem ser revisados pela ANP.")
-    assert recent_notice("2027-01", "en") == (
-        "Data for the most recent months (Nov 2026–Jan 2027) may still be revised by ANP.")
+        "Dados de jul–set/2026 ainda podem ser revisados pela ANP.")
+    assert recent_notice("2027-01", "en") == "Data for Nov 2026–Jan 2027 may still be revised by ANP."
 
 
 def test_uses_recent_months():
@@ -111,7 +110,7 @@ def test_finalize_with_redaction():
     assert out == (
         "Búzios produziu 1.197.657 bbl/d em setembro de 2026, cerca de [não confirmado] do "
         "pré-sal.\n\n"
-        "Os dados dos meses mais recentes (jul–set/2026) ainda podem ser revisados pela ANP.\n\n"
+        "Dados de jul–set/2026 ainda podem ser revisados pela ANP.\n\n"
         "Fontes: field_group_production(BÚZIOS, 2025-06..)\n"
         'Removido por não ter origem confirmada: "35%"')
 
