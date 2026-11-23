@@ -1,0 +1,3 @@
+[submodule "vendor/anp-mcp"]
+	path = vendor/anp-mcp
+	url = https://github.com/lorenamelos/anp-mcp.git

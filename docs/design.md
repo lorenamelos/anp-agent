@@ -294,7 +294,10 @@ async with AnpToolbox.start(settings) as toolbox:     # one per process (CLI run
   hand-written wrappers, so the agent sees exactly what any MCP client sees.
 - Warm-up: `start()` makes one `national_reconciliation` call outside any question budget.
   It downloads the dataset on first use (so the first question is not penalised) and gives
-  `latest_month` for R5. CI can set `ANP_MCP_DATA_DIR` to a cached copy.
+  `latest_month` for R5. Its output **never enters the model's context** and is not a
+  provenance source: only `latest_month` is kept, for the R5 notice. If the model needs the
+  reconciliation, it calls the tool itself, and that call counts toward the budget. CI can
+  set `ANP_MCP_DATA_DIR` to a cached copy.
 - Lifetime: one session per process, shared by all questions of that process. The graph gets
   the toolbox from the run context. `AsyncExitStack` closes the session and terminates the
   child process on exit, including on cancellation and Ctrl-C.
@@ -327,8 +330,16 @@ LLM provider and model. Passed to the graph through the run context; never in th
 | `max_llm_calls` | 10 | loop backstop |
 | `tool_timeout_s`, `question_timeout_s` | 20, 120 | section 2 |
 
-Cost in USD is computed per call with the harness's `Costs` and recorded in the state and
-the eval records. It is never a limit.
+The token limit exists to stop loops and runaway context, not to measure cost, so the four
+token kinds count alike. Cost in USD is computed per call with the harness's `Costs` (each
+kind at its own price) and recorded in the state and the eval records. It is never a limit.
+
+Basis for 40,000, counted the same way (input + output + cache read + cache write, summed
+over all calls of one answer) on the instrument-v3 runs: Haiku mean 7,349, p95 13,018,
+max 17,107; Sonnet mean 8,667, max 32,613. The Sonnet maximum is q17, which called
+`national_reconciliation(details=True)` (every month, a long result that is re-sent on each
+later turn). A question like that fits the limit but leaves no room for a regeneration, so
+it goes to redaction instead, as section 1.1 specifies.
 
 **Tool-call caps.** Enforced in the `tools` node, per individual call (one model turn can
 request several), separately for anp-mcp calls and calculator calls. If a turn asks for
