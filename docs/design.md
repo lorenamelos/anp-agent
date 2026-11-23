@@ -37,7 +37,7 @@ Facts from the anp-mcp code that shape this design:
 | The server sends `instructions` at initialisation (scope, dataset version, "not covered") | The agent passes them to the model, as desktop clients and the eval harness do; they are also a valid provenance source (as in grader v3) |
 | `serverInfo.version` reports the package version | The agent refuses to start against a server other than 0.1.0 |
 | The harness (`evals/`) is in the repository but **not in the installed package** | Reuse needs the tagged source tree, not only the dependency (section 4) |
-| Claude 5.5 models do not support forced `tool_choice` (noted in `run_evals.py`); `tool_choice: none` is not forced and stays available | "Answer now without tools" keeps the tool definitions and sends `tool_choice: none` (D21): by then the conversation holds `tool_use`/`tool_result` blocks, which need the tool definitions in the request, and the cached prefix (tools + system) stays the same |
+| Claude 5.5 models do not support forced `tool_choice` (noted in `run_evals.py`); `tool_choice: none` is not forced and works (checked, D21) | "Answer now without tools" keeps the tool definitions and sends `tool_choice: none` (D21), so the cached prefix (tools + system) stays the same |
 | Haiku v3 runs: mean 7.3k tokens per answer, p95 13k, max 17k; mean 1.7 tool calls, max 6 | Grounds the budget in section 3 |
 
 ## 1. Graph
@@ -647,4 +647,4 @@ anp-agent/
 | D18 | `top_changes` window months are derived deterministically from `latest_month` and `window_months`. |
 | D19 | Trailing zeros are written digits by default ("40.000" is exact to the unit); rounding them stays a configurable policy. |
 | D20 | No specific rule for a number grounded only by the default of a tool that was not called; regeneration handles it. |
-| D21 | Final mode keeps the tool definitions and sends `tool_choice: none`, instead of calling the model with no tools bound. |
+| D21 | Final mode keeps the tool definitions and sends `tool_choice: none`, instead of calling the model with no tools bound. Checked on 2026-11-23 with Haiku 5.5 (2 calls, US$ 0.000325): a request with `tool_use`/`tool_result` blocks and **no** tool definitions is accepted (HTTP 200, `req_011ChLjtHFkW65bxX7PXNnhf`), so dropping the tools was possible after all; `tool_choice: none` with the tools is accepted and the model answered in text, with no `tool_use` block (`req_011ChLjtQKQbk98ccM7uV8xj`). What D21 keeps is the cached prefix; what it costs is the "final call without tools" step of the token limit (section 3). |
