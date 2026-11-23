@@ -343,8 +343,10 @@ async with AnpToolbox.start(settings) as toolbox:     # one per process (CLI run
 ## 3. Budget control (R4)
 
 **Where the limits live.** One `Settings` object (`src/anp_agent/config.py`), read from
-environment variables with defaults, which is also the single configuration point for the
-LLM provider and model. Passed to the graph through the run context; never in the prompt.
+environment variables (`ANP_AGENT_<SETTING>`, e.g. `ANP_AGENT_MAX_TOOL_CALLS=4`) with
+defaults, which is also the single configuration point for the LLM provider and model. Passed
+to the graph through the run context; never in the prompt. The API key stays in the SDK's own
+variable (`ANTHROPIC_API_KEY`, from `.env`, never committed).
 
 | Setting | Default | Note |
 |---|---|---|
@@ -352,8 +354,9 @@ LLM provider and model. Passed to the graph through the run context; never in th
 | `max_calculator_calls` | 4 | separate cap |
 | `max_tokens_per_question` | 40,000 | **hard** limit; all billed tokens count alike (input, output, cache read, cache write) |
 | `max_output_tokens` per LLM call | 2,048 | same as the eval harness |
-| `max_llm_calls` | 10 | loop backstop |
-| `tool_timeout_s`, `question_timeout_s` | 20, 120 | section 2 |
+| `max_llm_calls` | 10 | loop backstop; the last allowed call has no tools (final mode) |
+| `recursion_limit` | 25 | LangGraph steps, behind the limits above |
+| `tool_timeout_s`, `question_timeout_s`, `server_init_timeout_s` | 20, 120, 30 | section 2 |
 
 The token limit exists to stop loops and runaway context, not to measure cost, so the four
 token kinds count alike. Cost in USD is computed per call with the harness's `Costs` (each
@@ -384,8 +387,14 @@ even a final call does not fit -> no LLM call: deterministic answer listing the 
                                   obtained (as returned, unformatted) and what was not done
 ```
 
+The last call's prompt is known exactly from its `usage` (input + cache read + cache write,
+plus its output, which the next call re-sends). Only the messages added since (tool results,
+the regeneration feedback) and the first prompt are estimated, on the high side, at 2
+characters per token: JSON full of digits takes more tokens per character than prose, and an
+overestimate only moves a call into final mode earlier. The eval run records the estimate
+next to the real input of the following call, to check that it stays on the high side.
 Because the projection includes the full `max_output_tokens`, the 40,000-token limit is
-never exceeded. Token usage is read from each response's raw `usage` block, not from
+not exceeded as long as that estimate holds. Token usage is read from each response's raw `usage` block, not from
 LangChain's `usage_metadata`, which folds cache tokens into `input_tokens` and would
 double-count in the cost formula shared with the harness. A test compares both against a
 direct SDK call.
