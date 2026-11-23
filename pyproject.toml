@@ -17,6 +17,9 @@ dependencies = [
     "pyyaml>=6.0.4",
 ]
 
+[project.scripts]
+anp-agent = "anp_agent.cli:main"
+
 [project.urls]
 Repository = "https://github.com/lorenamelos/anp-agent"
 

@@ -1,8 +1,8 @@
 # anp-agent: design
 
-Status: **design agreed, not implemented yet.** Decisions are recorded in section 6. One
-choice is gated by data: the calculator (D1) is implemented only after the offline guardrail
-replay in section 4.4 has been reviewed.
+Status: **implemented through the command line (section 5); the live evals (section 4) are
+next.** Decisions are recorded in section 6. The calculator (D1) was implemented after the
+offline guardrail replay in section 4.4 was reviewed.
 
 ## 0. Scope and fixed constraints
 
