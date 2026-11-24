@@ -520,6 +520,13 @@ The types, with the first wording of each:
 The guardrail's own count is not evidence of correctness (it measures itself); the grader's
 `ungrounded`/`invented` count is the independent check.
 
+**Failures are read by hand before they are reported.** The grader's verdict and its
+`error_type` label are both model output. Example: agent-v1 a08 r0 (section 4.5.2) was
+labelled `wrong_number`, yet no number in the answer was wrong; the grader's own reason
+named a stray sentence and a statement. The verdict stood, the label was the grader's
+error, and the results say so instead of counting a wrong number. A label is reported as
+the grader gave it only after the answer, its tool results and the reason have been read.
+
 ### 4.4 Offline guardrail replay (gate for the calculator)
 
 anp-mcp's `evals/runs/` holds 126 graded instrument-v3 answers (Sonnet and Haiku, 63 each),
@@ -688,6 +695,8 @@ instrument.
   since early 2025": 89,131 in 2025-01, a peak of 92,616 in 2025-09, 87,345 in 2026-09),
   not a number. The failure is fair; its label is the grader's error. Cause: the
   regeneration, which narrated the feedback, then the removal. Not a hole in R1.
+  Fixed by D27 (the first draft is now kept in the records, `draft_before_regen`);
+  measured in the final runs. An example of why failures are read by hand (4.3).
 - **a05 0/3:** the 2025 top 10 is not available from the tools. `search_field_groups`
   orders by the latest month, `top_changes` by the change between two windows ending at
   the latest month, and `field_group_production` reads one group per call; ranking by 2025
@@ -696,7 +705,9 @@ instrument.
   SAPINHOÁ and RONCADOR (`wrong_entity`). r2 spent its calls on `top_changes` and one
   `search_field_groups` per name (D22) and fetched no 2025 series (`incomplete`). The
   rubric expects the unfetched part of the 2025 top 10, which the agent cannot know: an
-  instrument issue, recorded as a known limit of the tool layer, not fixed here.
+  instrument issue, recorded as a known limit of the tool layer, not fixed here. For a
+  future agent-v2: a rubric that accepts a ranking by a stated proxy, with what was not
+  fetched by that proxy.
 - Redaction left garbled text twice: a08 r0 (above) and a05 r0, where a range ("between
   800 and 900 thousand bbl/d", no tool value) was removed from a sentence in final mode, so
   with no regeneration ("TUPI ficou quase sempre [não confirmado]").
@@ -706,8 +717,8 @@ instrument.
   12.8 s per answer. The cases are the heavy ones, so not comparable with 4.5.1's means.
 
 **Before the repository goes public:** one final full run of instrument v3 and of agent-v1
-on the same commit, and the README numbers taken from those two runs. D22, D23 and D26
-change the system prompt, so they change the behaviour on every case, and the results above
+on the same commit, and the README numbers taken from those two runs. D22, D23, D26 and D27
+change the prompts, so they change the behaviour on every case, and the results above
 (v3 at `63c01b9`, agent-v1 at `fca876e`, and the run of the affected cases) predate them.
 
 Future idea, not done: the cache breakpoint covers only the tools and the system prompt
@@ -815,3 +826,4 @@ anp-agent/
 | D24 | Calculator operation `annual_volume`: a year's monthly bbl/d values with their months, each checked against the source row of that month, summed with each month's days, in barrels; one call for a yearly volume (agent-v1 a12 ran out of calculator calls converting year by year). |
 | D25 | The emergency answer is readable and deterministic (section 3): no raw JSON, only the tools' values, then the queries made and left out. |
 | D26 | Periods left open, in the prompt: a yearly figure without a year uses the last complete year, current production without a period uses the latest month, and the answer says which. A single "last complete year" rule would have broken v3 q06 and q15, whose rubrics expect the latest month. |
+| D27 | The regeneration note ends with "write only the answer for the user; do not mention this note or the numbers removed" (agent-v1 a08 r0 opened its regenerated answer with a sentence about the removed number, which redaction then garbled). The eval records keep the first draft of a regenerated answer (`draft_before_regen`). |

@@ -140,7 +140,10 @@ def test_one_regeneration_fixes_the_answer():
     assert out["status"] == "answered" and out["regen_count"] == 1
     note = llm.requests[2]["messages"][-1]
     assert isinstance(note, HumanMessage) and '"35%"' in note.content
+    assert "não mencione esta nota" in note.content
     assert [r["ok"] for r in out["reports"]] == [False, True]
+    assert out["first_draft"] == "Búzios produziu 1.197.657 bbl/d, 35% do pré-sal."
+    assert out["draft"] == "Búzios produziu 1.197.657 bbl/d."
 
 
 def test_redaction_after_a_failed_regeneration():

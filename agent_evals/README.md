@@ -28,10 +28,11 @@ no model text (server unavailable, no LLM call fitted, an error), the answer as 
 graded.
 
 **Records** keep every field of the harness schema, so its `report.py` reads them as is, plus
-agent fields: `answer_full`, `status`, `regenerated`, `ungrounded_before_regen`,
-`ungrounded_final`, `removed`, `budget_reached`, `token_limited`, `not_executed`,
-`tool_calls_used`, `calculator_calls_used`, `llm_calls`, `tokens_used`, `llm_log` (per LLM
-call: mode, projected prompt, actual prompt, every token kind) and `agent_commit`.
+agent fields: `answer_full`, `status`, `regenerated`, `draft_before_regen` (the first draft,
+when the answer was regenerated), `ungrounded_before_regen`, `ungrounded_final`, `removed`,
+`budget_reached`, `token_limited`, `not_executed`, `tool_calls_used`,
+`calculator_calls_used`, `llm_calls`, `tokens_used`, `llm_log` (per LLM call: mode,
+projected prompt, actual prompt, every token kind) and `agent_commit`.
 
 A data question passes the harness's tool check only with an anp-mcp call; a calculator call
 alone does not count.

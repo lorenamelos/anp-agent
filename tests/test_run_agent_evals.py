@@ -6,6 +6,7 @@ RESULT = {
     "draft": "Búzios: 1.197.657 bbl/d.",
     "answer": "Búzios: 1.197.657 bbl/d.\n\nFontes: field_group_production(BÚZIOS)",
     "status": "answered", "usd_used": 0.0012, "regen_count": 1, "removed": [],
+    "first_draft": "Búzios: 1.197.657 bbl/d, 35% do pré-sal.",
     "reports": [{"ok": False, "ungrounded": ["35%"]}, {"ok": True, "ungrounded": []}],
     "tool_records": [
         {"name": "field_group_production", "args": {"field_group": "BÚZIOS"},
@@ -40,6 +41,8 @@ def test_graded_text_without_model_text():
 def test_agent_fields():
     f = agent_fields(RESULT, "abc1234")
     assert f["regenerated"] and f["ungrounded_before_regen"] == ["35%"]
+    assert f["draft_before_regen"] == "Búzios: 1.197.657 bbl/d, 35% do pré-sal."
+    assert agent_fields({**RESULT, "regen_count": 0}, "abc1234")["draft_before_regen"] is None
     assert f["ungrounded_final"] == [] and f["agent_commit"] == "abc1234"
     assert f["answer_full"].endswith("Fontes: field_group_production(BÚZIOS)")
 

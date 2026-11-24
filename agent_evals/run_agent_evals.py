@@ -92,6 +92,8 @@ def agent_fields(result: dict, agent_commit: str) -> dict:
         "answer_full": result.get("answer") or result.get("error", ""),
         "status": result.get("status"), "error": result.get("error"),
         "regenerated": result.get("regen_count", 0) > 0,
+        "draft_before_regen": (result.get("first_draft")
+                               if result.get("regen_count", 0) > 0 else None),
         "ungrounded_before_regen": reports[0]["ungrounded"] if reports else [],
         "ungrounded_final": reports[-1]["ungrounded"] if reports else [],
         "removed": result.get("removed", []),

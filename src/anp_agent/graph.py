@@ -91,6 +91,7 @@ class AgentState(TypedDict, total=False):
     no_llm: bool  # no LLM call fitted: the draft lists the tool results
     # R1
     draft: str
+    first_draft: str  # the first draft checked, kept for the eval records
     regen_count: int
     can_regenerate: bool  # set by the guardrail: one more LLM call fits
     reports: list[dict]  # one per draft checked: ok + ungrounded spans
@@ -161,7 +162,8 @@ def start(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
         "tool_records": [], "tool_calls_used": 0, "calculator_calls_used": 0,
         "tokens_used": 0, "usd_used": 0.0, "llm_calls": 0, "last_usage": None, "llm_log": [],
         "final_mode": False, "token_limited": False, "not_executed": [], "unavailable": False,
-        "no_llm": False, "regen_count": 0, "can_regenerate": False, "reports": [], "removed": [], "notices": [],
+        "no_llm": False, "first_draft": "", "regen_count": 0, "can_regenerate": False, "reports": [], "removed": [],
+        "notices": [],
     }
 
 
@@ -257,7 +259,9 @@ def guardrail(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
     summary = {"ok": report.ok, "ungrounded": [v.claim.text for v in report.ungrounded]}
     regen = (not report.ok and state["regen_count"] == 0
              and can_regenerate(runtime.context, state, summary["ungrounded"]))
-    return {"draft": draft, "reports": [*state["reports"], summary], "can_regenerate": regen}
+    first = {} if state["reports"] else {"first_draft": draft}
+    return {"draft": draft, **first, "reports": [*state["reports"], summary],
+            "can_regenerate": regen}
 
 
 def feedback_message(language: str, ungrounded: list[str]) -> HumanMessage:

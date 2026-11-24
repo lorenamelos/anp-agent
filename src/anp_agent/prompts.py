@@ -40,11 +40,13 @@ FEEDBACK = {
     "pt": ("Estes números da sua resposta não aparecem nos resultados das ferramentas desta "
            "conversa: {numbers}. Para cada um, faça uma destas três coisas: busque-o com uma "
            "ferramenta, calcule-o com calculate a partir de valores dos resultados, ou retire-o. "
-           "Depois escreva a resposta completa de novo."),
+           "Depois escreva a resposta completa de novo. Escreva só a resposta para o usuário; "
+           "não mencione esta nota nem os números retirados."),
     "en": ("These numbers in your answer do not appear in this conversation's tool results: "
            "{numbers}. For each one, do one of three things: fetch it with a tool, derive it "
            "with calculate from values in the results, or remove it. Then write the whole "
-           "answer again."),
+           "answer again. Write only the answer for the user; do not mention this note or the "
+           "numbers removed."),
 }
 
 UNAVAILABLE = {
