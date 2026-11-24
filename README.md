@@ -136,6 +136,31 @@ The grader reads the model's text after redaction, without the notices and the f
 the harness graded the model's text (details in [agent_evals/README.md](agent_evals/README.md)).
 Total cost of the run, grader included: US$ 0.63.
 
+### Instrument agent-v1 (first run)
+
+The agent's own 13 questions ([agent_evals/cases_agent.yaml](agent_evals/cases_agent.yaml)),
+3 repeats, same grader and prices; not comparable with the v3 table above:
+
+| Category | Cases | Passed |
+|---|---|---|
+| multi-step | a01–a04 | 10/12 (a03: 1/3) |
+| budget stress | a05 | 1/3 |
+| refusals | a06–a09 | 11/12 (a08: 2/3) |
+| partial refusal | a10 | 3/3 |
+| over-refusal check | a11 | 3/3 |
+| derivation | a12 | 0/3 |
+| regression (v3 q17) | a13 | 3/3 |
+| **all** | | **31/39 (79%)** |
+
+- The v3 question that hit the token limit (a13) passed 3/3; the prompt change worked: no
+  repeat asked for the month-by-month reconciliation detail.
+- Again no failure for a wrong number. The failures are budget limits (7 of 8) and
+  statements R1 does not check (a08, and a05 naming unfetched fields from memory).
+- The derivation question (a12, Búzios in barrels per year) failed 3/3: the model converted
+  several years one calculator call at a time and ran out of the 4 calculator calls.
+
+Cost: US$ 0.45 for the 39 answers, grader included.
+
 ## Checking the check
 
 Before any LLM spend, the guardrail was replayed on the 126 graded answers that anp-mcp's own

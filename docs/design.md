@@ -604,6 +604,44 @@ grader, 21 cases × 3, dataset v2026.09; compared with anp-mcp's Haiku v3 run.
 - Cost: US$ 0.632 for the run (solver US$ 0.055, grader US$ 0.578), plus US$ 0.025 for the
   2-question pilot.
 
+### 4.5.1 Results: instrument agent-v1, first run (2026-11-24)
+
+Run `20261124T011041Z`, agent `fca876e` (includes the 1.8 characters per token and the
+`details=true` prompt change), anp-mcp `a313249`, Haiku 5.5 solver, Sonnet 5.5 grader, 13
+cases × 3, dataset v2026.09. Not comparable with the v3 results: a different instrument.
+
+| Category | Cases | Passed |
+|---|---|---|
+| multi-step | a01–a04 | 10/12 (a03: 1/3) |
+| budget stress | a05 | 1/3 |
+| refusals | a06–a09 | 11/12 (a08: 2/3) |
+| partial refusal | a10 | 3/3 |
+| over-refusal check | a11 | 3/3 |
+| derivation | a12 | 0/3 |
+| regression (v3 q17) | a13 | 3/3 |
+| **all** | | **31/39 (79%)** |
+
+- **a13 (regression for v3 q17): 3/3, and no repeat asked for `details=true`**, against 2
+  token-limit failures in 3 under v3; 6k–14k tokens per answer, against about 31.5k.
+- **R4 was reached in 8 answers** (status `budget_reached`), all failed except one:
+  - a12 ×3 (derivation): the calculator cap. The model converted several yearly averages to
+    barrels one `calculate` call at a time, used the 4 calls and had more refused, then
+    answered with daily rates only; graded `incomplete`. The question asks for one figure;
+    the cap and the one-value `convert` meet here.
+  - a03 r0, r1: the token limit, after 6 anp-mcp calls, 4 calculator calls and a
+    regeneration (about 35k tokens); no LLM call fitted and the deterministic answer was
+    graded `incomplete`.
+  - a05 ×3 (budget stress, by design more calls than the cap): r2 passed (it named what it
+    did not fetch); r0 hit the token limit; r1 named two unfetched "top 10" fields from
+    memory (`wrong_entity`), a non-numeric claim R1 does not check.
+- a08 r0: `ungrounded` for "the fastest-growing fields are largely operated by Petrobras",
+  again a statement, not a number.
+- No failure for a wrong or ungrounded number. R1 flagged 2 drafts; both regenerations
+  fixed them; no redaction.
+- Token projection: 81 follow-up calls, none below the actual prompt (minimum 42 above).
+- Cost: US$ 0.4492 (solver US$ 0.046, grader US$ 0.403), US$ 0.0012 solver per answer,
+  8.8 s per answer.
+
 Future idea, not done: the cache breakpoint covers only the tools and the system prompt
 (2,515 tokens), so the conversation history is re-sent uncached on every turn. A breakpoint
 on the latest message would make the re-sent history a cache read (cheaper); it would not
