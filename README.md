@@ -1,5 +1,7 @@
 # anp-agent
 
+[![CI](https://github.com/lorenamelos/anp-agent/actions/workflows/ci.yml/badge.svg)](https://github.com/lorenamelos/anp-agent/actions/workflows/ci.yml)
+
 A [LangGraph](https://github.com/langchain-ai/langgraph) agent that answers questions about
 Brazilian oil production, with every number in the answer checked against the tool results
 it came from.
@@ -235,6 +237,9 @@ uv run python -m agent_evals.replay_guardrail   # the offline replay above
 
 `vendor/anp-mcp` is a read-only git submodule at tag `v0.1.0`, used for the eval instrument
 (cases, ground truth, grader, prices and the graded runs).
+
+CI (GitHub Actions) runs `ruff` and the offline tests on every push and pull request, with no
+API key.
 
 ## Licence
 
