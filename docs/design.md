@@ -657,6 +657,11 @@ cases × 3, dataset v2026.09. Not comparable with the v3 results: a different in
 - Cost: US$ 0.4492 (solver US$ 0.046, grader US$ 0.403), US$ 0.0012 solver per answer,
   8.8 s per answer.
 
+**Before the repository goes public:** one final full run of instrument v3 and of agent-v1
+on the same commit, and the README numbers taken from those two runs. D22, D23 and D26
+change the system prompt, so they change the behaviour on every case, and the results above
+(v3 at `63c01b9`, agent-v1 at `fca876e`, and the run of the affected cases) predate them.
+
 Future idea, not done: the cache breakpoint covers only the tools and the system prompt
 (2,515 tokens), so the conversation history is re-sent uncached on every turn. A breakpoint
 on the latest message would make the re-sent history a cache read (cheaper); it would not
@@ -761,3 +766,4 @@ anp-agent/
 | D23 | R3 reinforced in the prompt: nothing about fields, operators, rankings or groups that no tool result of the question states (five failures for such statements across the two runs: v3 q03, q10, q18; agent-v1 a05 r1, a08 r0). Still a prompt rule; R1 does not check statements. |
 | D24 | Calculator operation `annual_volume`: a year's monthly bbl/d values with their months, each checked against the source row of that month, summed with each month's days, in barrels; one call for a yearly volume (agent-v1 a12 ran out of calculator calls converting year by year). |
 | D25 | The emergency answer is readable and deterministic (section 3): no raw JSON, only the tools' values, then the queries made and left out. |
+| D26 | Periods left open, in the prompt: a yearly figure without a year uses the last complete year, current production without a period uses the latest month, and the answer says which. A single "last complete year" rule would have broken v3 q06 and q15, whose rubrics expect the latest month. |
