@@ -1,0 +1,93 @@
+# Eval cases for the agent: instrument agent-v1 (design, sections 4.1 and 4.2).
+# Same schema as anp-mcp's evals/cases.yaml:
+# - question: what a user types (Portuguese or English, on purpose).
+# - expect_tools: the answer must come from at least one of these anp-mcp tools
+#   ([] = no tool needed; the calculator alone never counts).
+# - rubric: what the grader checks. {key} is filled from ground_truth_agent.py, never typed.
+# - expect_refusal (optional): the question is out of scope; information for the report only.
+# - regression (optional): a v3 case kept here to measure a change; the note says which.
+# Rule kept from anp-mcp: commit this file before running it, and bump to agent-v2 when the
+# way answers are checked changes.
+
+- id: a01
+  category: multi_step
+  question: "Que parcela da produção nacional Búzios representou em setembro de 2026?"
+  expect_tools: [field_group_production, search_field_groups]
+  rubric: "Gives Búzios' share of Brazil's petroleum production in 2026-09 within 1 percentage point of {buzios_share_2026_09_pct:.1f}% (Búzios {buzios_2026_09_bpd:,.0f} bbl/d over a national total of {national_2026_09_bpd:,.0f} bbl/d). Both inputs must come from the tools."
+
+- id: a02
+  category: multi_step
+  question: "Dos 5 campos que mais cresceram nos últimos 6 meses, qual tinha mais poços ativos no último mês?"
+  expect_tools: [top_changes]
+  rubric: "Names {top5_up_6m_most_wells}, with {top5_up_6m_most_wells_count} active wells in {latest_month}, among the top 5 risers over 6 months ({top5_up_6m}). If the call budget stops it before checking all five, saying which were not checked, without guessing their wells, is acceptable; naming a different field as the answer is wrong."
+
+- id: a03
+  category: multi_step
+  question: "Lula produziu mais que Mero em 2025?"
+  expect_tools: [field_group_production, search_field_groups]
+  rubric: "Says yes: Lula (field group TUPI) produced more than Mero in 2025, with 2025 averages within 2% of {tupi_2025_mean_bpd:,.0f} bbl/d for TUPI and {mero_2025_mean_bpd:,.0f} bbl/d for Mero, or monthly figures consistent with them. Should say that Lula is in the TUPI group."
+
+- id: a04
+  category: multi_step
+  question: "A produção nacional de 2025 foi maior que a de 2024? Em quanto?"
+  expect_tools: [national_production]
+  rubric: "Says yes, 2025 was higher: about {national_2025_bpd:,.0f} against {national_2024_bpd:,.0f} bbl/d (yearly averages), a rise within 2% of {national_2025_vs_2024_bpd:,.0f} bbl/d or about {national_2025_vs_2024_pct:.1f}%."
+
+- id: a05
+  category: budget
+  question: "Compare mês a mês em 2025 a produção dos 10 maiores campos."
+  expect_tools: [field_group_production, top_changes, search_field_groups]
+  rubric: "The question needs more data calls than the agent may make. Correct: compares the fields it fetched with real monthly figures and says clearly which of the 10 largest 2025 field groups ({top10_2025}) were not fetched or not compared. Wrong: monthly figures for a field that no tool result shows, or claiming a complete comparison of all 10."
+
+- id: a06
+  category: out_of_scope
+  question: "Qual o preço do barril de petróleo hoje?"
+  expect_tools: []
+  expect_refusal: true
+  rubric: "Says the tools cover production volumes, not prices, and gives no price. Wrong: any oil price presented as data."
+
+- id: a07
+  category: out_of_scope
+  question: "Quanto o Brasil vai produzir de petróleo em 2027?"
+  expect_tools: []
+  expect_refusal: true
+  rubric: "Says the tools have no forecast and gives no predicted figure for 2027 as data. Describing the recent history from the tools, clearly labelled as history, is fine. Wrong: a specific forecast number."
+
+- id: a08
+  category: out_of_scope
+  question: "Devo investir na Petrobras?"
+  expect_tools: []
+  expect_refusal: true
+  rubric: "Does not give investment advice: says this is outside what the tools and the assistant cover. Mentioning production data, clearly as data and not as advice, is fine. Wrong: a recommendation to buy, sell or hold."
+
+- id: a09
+  category: out_of_scope
+  question: "How much oil did Norway produce in 2025?"
+  expect_tools: []
+  expect_refusal: true
+  rubric: "Says the tools cover only Brazilian (ANP) data and gives no Norwegian figure as data. A figure from general knowledge is acceptable only if clearly flagged as not coming from the tools."
+
+- id: a10
+  category: partial_refusal
+  question: "Quanto Mero produziu em 2025 e quanto Maricá recebeu de royalties?"
+  expect_tools: [field_group_production, search_field_groups]
+  rubric: "Answers the first part: Mero's 2025 production, an average within 2% of {mero_2025_mean_bpd:,.0f} bbl/d or monthly figures consistent with it. Refuses the second: says the tools do not cover royalties and gives no amount in R$. Refusing both parts is wrong."
+
+- id: a11
+  category: over_refusal
+  question: "Qual a produção offshore do Brasil em 2025?"
+  expect_tools: [national_production]
+  rubric: "Answers (the tools cover it): Brazil's offshore petroleum production in 2025 within 1% of {national_offshore_2025_bpd:,.0f} bbl/d (yearly average). Refusing or saying the data is not available is wrong."
+
+- id: a12
+  category: derivation
+  question: "Quanto Búzios produz por ano, em barris?"
+  expect_tools: [field_group_production, search_field_groups]
+  rubric: "Gives a yearly volume in barrels and says how it was obtained. Correct: the latest monthly rate times 365, within 2% of {buzios_latest_x365_bbl:,.0f} barrels; or the 2025 total, within 2% of {buzios_2025_total_bbl:,.0f} barrels; or another basis that is stated and consistent with the tool results. Wrong: a figure in barrels per day presented as per year, or a total with no stated basis."
+
+- id: a13
+  category: trust
+  regression: "v3 q17 hit the token limit twice after details=true; the prompt now asks for the detail only when month-by-month values are needed"
+  question: "Qual o pior mês da reconciliação com o total nacional, e qual foi a diferença?"
+  expect_tools: [national_reconciliation]
+  rubric: "Says {recon_worst_month} with a gap of about {recon_worst_gap_pct:+.2f}%."

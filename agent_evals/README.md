@@ -36,6 +36,25 @@ call: mode, projected prompt, actual prompt, every token kind) and `agent_commit
 A data question passes the harness's tool check only with an anp-mcp call; a calculator call
 alone does not count.
 
+## Instrument agent-v1
+
+The agent's own cases (`cases_agent.yaml`, a01–a13), with the same runner, grader and
+prices: multi-step questions (a share of the national total, a ranking followed by lookups,
+an old field name, year over year), a question that needs more calls than the cap allows,
+refusals (prices, a forecast, investment advice, another country), a partial refusal, an
+over-refusal check, a derivation the guardrail must see grounded, and v3 q17 again as a
+regression case. Expected values come from `ground_truth_agent.py`, which imports anp-mcp's
+`ground_truth.py` (unchanged) and adds keys, each a query on the same dataset files.
+
+```bash
+uv run python -m agent_evals.ground_truth_agent                  # the expected values
+uv run python -m agent_evals.run_agent_evals --instrument agent-v1 --max-usd 0.90
+```
+
+As in anp-mcp: the cases are committed before a run, and a change in how answers are
+checked bumps the name to agent-v2. Results of different instruments are never mixed in one
+table.
+
 ## Offline replay: `replay_guardrail.py`
 
 Runs the guardrail (R1) on anp-mcp's 126 graded v3 answers and compares its flags with the

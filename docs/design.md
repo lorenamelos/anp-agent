@@ -472,7 +472,12 @@ vendored `ground_truth.py` and adds new keys; nothing in the vendored file is ed
 kept from anp-mcp: commit the instrument before running it, bump `agent-v1` → `agent-v2` when
 the way answers are checked changes.
 
-### 4.2 New question types (draft list, values computed, never typed)
+### 4.2 New question types: instrument agent-v1
+
+The 13 cases are in `agent_evals/cases_agent.yaml` (a01–a13), their expected values in
+`agent_evals/ground_truth_agent.py`; the runner takes `--instrument agent-v1`. a13 repeats
+v3 q17 unchanged, as a regression case for the `details=true` prompt change (section 4.5).
+The types, with the first wording of each:
 
 | Type | Example | What the rubric checks |
 |---|---|---|

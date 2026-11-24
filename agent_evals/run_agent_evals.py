@@ -1,12 +1,16 @@
-"""Run the anp-mcp eval instrument (v3) on the agent (design, section 4.1).
+"""Run an eval instrument on the agent (design, section 4.1): anp-mcp's v3, or agent-v1.
 
 Mirrors anp-mcp's `evals/run_evals.main()` and replaces only `ask()` with the agent graph:
 the same cases, ground truth, grader (Sonnet 5.5), grounding rule and prices, imported
 unchanged from the vendored anp-mcp at v0.1.0. Records keep every field of the harness
 schema, so its `report.py` reads them as is, plus agent fields that it ignores.
 
+agent-v1 keeps the same runner, grader and prices with its own cases
+(agent_evals/cases_agent.yaml) and ground truth (agent_evals/ground_truth_agent.py).
+
     uv run python -m agent_evals.run_agent_evals --cases q01 q05 -r 1
     uv run python -m agent_evals.run_agent_evals --max-usd 0.90      # all cases, 3 repeats
+    uv run python -m agent_evals.run_agent_evals --instrument agent-v1
 
 Needs ANTHROPIC_API_KEY in .env. One anp-mcp server for the whole run. Stops before a new
 answer once the run's cost reaches --max-usd. Results: agent_evals/results/<run>.jsonl.
@@ -39,6 +43,14 @@ OUT = ROOT / "agent_evals" / "results"
 sys.path.insert(0, str(VENDOR))  # the vendored harness: `evals.*` (design, section 4.1)
 from evals.ground_truth import compute
 from evals.run_evals import INSTRUMENT, RESULT_LIMIT, Costs, grade
+
+from agent_evals import ground_truth_agent
+
+AGENT_INSTRUMENT = "agent-v1"  # bump when the way answers are checked changes
+INSTRUMENTS = {  # name: (cases file, ground truth)
+    INSTRUMENT: (VENDOR / "evals" / "cases.yaml", compute),
+    AGENT_INSTRUMENT: (ROOT / "agent_evals" / "cases_agent.yaml", ground_truth_agent.compute),
+}
 
 logging.getLogger("httpx2").setLevel(logging.WARNING)  # no per-request log lines (SDK 2.x)
 
@@ -102,21 +114,22 @@ async def main(args) -> None:
     for m in (settings.model, args.judge_model):
         if m not in prices:
             sys.exit(f"No price for {m} in the vendored pricing.yaml.")
-    cases = yaml.safe_load((VENDOR / "evals" / "cases.yaml").read_text())
+    cases_file, truth_of = INSTRUMENTS[args.instrument]
+    cases = yaml.safe_load(cases_file.read_text())
     if args.cases:
         cases = [c for c in cases if c["id"] in args.cases]
-    truth = compute()
+    truth = truth_of()
     server_revision = os.environ.get("ANP_MCP_REVISION", truth["dataset_revision"])
     if server_revision != truth["dataset_revision"]:  # design, risk 10
         sys.exit(f"dataset mismatch: server {server_revision}, truth {truth['dataset_revision']}")
     costs = Costs(prices)
     client = AsyncAnthropic()
     agent_commit, server_commit = git_commit(ROOT), git_commit(VENDOR)
-    run_id = (f"{datetime.now(UTC):%Y%m%dT%H%M%SZ}_agent_{settings.model}"
+    run_id = (f"{datetime.now(UTC):%Y%m%dT%H%M%SZ}_agent_{args.instrument}_{settings.model}"
               + (f"_{args.label}" if args.label else ""))
     OUT.mkdir(parents=True, exist_ok=True)
     out = OUT / f"{run_id}.jsonl"
-    print(f"Agent {agent_commit}, anp-mcp {server_commit}, instrument {INSTRUMENT}, "
+    print(f"Agent {agent_commit}, anp-mcp {server_commit}, instrument {args.instrument}, "
           f"{len(cases)} cases x {args.repeats}, solver {settings.model}, judge {args.judge_model}")
 
     async with AnpToolbox.start(settings) as toolbox:
@@ -143,7 +156,8 @@ async def main(args) -> None:
                                   if case["expect_tools"] else [])
                     passed = verdict["passed"] and tool_ok
                     record = {
-                        "run_id": run_id, "instrument": INSTRUMENT, "server_commit": server_commit,
+                        "run_id": run_id, "instrument": args.instrument,
+                        "server_commit": server_commit,
                         "label": args.label or "", "case": case["id"],
                         "category": case["category"], "repeat": rep, "model": settings.model,
                         "judge_model": args.judge_model,
@@ -151,6 +165,7 @@ async def main(args) -> None:
                         "server_instructions": bool(toolbox.instructions),
                         "tools_available": tools, "question": case["question"],
                         "rubric": rubric, **run, "tool_ok": tool_ok,
+                        "expect_refusal": case.get("expect_refusal", False),
                         "unexpected_tools": unexpected, **verdict,
                         "grader_passed": verdict["passed"], "passed": passed,
                         **agent_fields(result, agent_commit),
@@ -181,6 +196,7 @@ def _add_solver_cost(costs: Costs, model: str, run: dict) -> None:
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--instrument", choices=list(INSTRUMENTS), default=INSTRUMENT)
     parser.add_argument("--judge-model", default="claude-sonnet-5-5")
     parser.add_argument("-r", "--repeats", type=int, default=3)
     parser.add_argument("--cases", nargs="*", help="case ids, e.g. q01 q05")
