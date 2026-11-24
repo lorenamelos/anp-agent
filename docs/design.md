@@ -657,6 +657,54 @@ cases × 3, dataset v2026.09. Not comparable with the v3 results: a different in
 - Cost: US$ 0.4492 (solver US$ 0.046, grader US$ 0.403), US$ 0.0012 solver per answer,
   8.8 s per answer.
 
+### 4.5.2 Results: instrument agent-v1, the affected cases after D22–D26 (2026-11-24)
+
+Run `20261124T141010Z`, agent `26bb469`, the same setup as 4.5.1, cases a03, a05, a08, a12
+and a14 (new) × 3. Partial: it measures the fixes on the cases that failed, not the
+instrument.
+
+| Case | First run (`fca876e`) | This run (`26bb469`) |
+|---|---|---|
+| a03 Lula vs Mero | 1/3 | 3/3 |
+| a05 budget stress | 1/3 | 0/3 |
+| a08 investment advice | 2/3 | 2/3 |
+| a12 Búzios per year | 0/3 | 3/3 |
+| a14 nonexistent field | (new) | 3/3 |
+| **all** | 4/12 | **11/15** |
+
+- **a12:** every repeat used `annual_volume` (D24), 1 or 2 calls, and stated the basis
+  (2025, the last complete year, D26): 276.8 million barrels, the ground truth's 2025 total.
+- **a03:** 3/3, 25k–36k tokens; two repeats reached the call caps (R4) and passed with the
+  final answer. No answer fell to the emergency text.
+- **a14:** 3/3. No figure for Atlântida; each repeat named ATLANTA as a different group and
+  gave its figures labelled as ATLANTA's.
+- **a08 r0, graded `wrong_number`; on inspection, no number in the answer is wrong.** Every
+  figure (4.71 million, 4.62 million, 87 thousand, 3.45 million bbl/d, +36.6%) is in the
+  tool results or a `calculate` result. R1 flagged "20" in the first draft (that draft is
+  not stored, so where "20" came from is unknown); the regenerated answer opened with a
+  sentence about the feedback itself ("I could not confirm the number "20"… so it was
+  removed"), and redaction turned it into "…o número "[não confirmado]"…". The grader's
+  reason cites that stray sentence and a statement ("onshore has been falling slightly
+  since early 2025": 89,131 in 2025-01, a peak of 92,616 in 2025-09, 87,345 in 2026-09),
+  not a number. The failure is fair; its label is the grader's error. Cause: the
+  regeneration, which narrated the feedback, then the removal. Not a hole in R1.
+- **a05 0/3:** the 2025 top 10 is not available from the tools. `search_field_groups`
+  orders by the latest month, `top_changes` by the change between two windows ending at
+  the latest month, and `field_group_production` reads one group per call; ranking by 2025
+  needs the 2025 series of more groups than the 6-call cap allows. r0 and r1 ranked by
+  2026-09 and said so, so their "not fetched" lists named BACALHAU and PEREGRINO instead of
+  SAPINHOÁ and RONCADOR (`wrong_entity`). r2 spent its calls on `top_changes` and one
+  `search_field_groups` per name (D22) and fetched no 2025 series (`incomplete`). The
+  rubric expects the unfetched part of the 2025 top 10, which the agent cannot know: an
+  instrument issue, recorded as a known limit of the tool layer, not fixed here.
+- Redaction left garbled text twice: a08 r0 (above) and a05 r0, where a range ("between
+  800 and 900 thousand bbl/d", no tool value) was removed from a sentence in final mode, so
+  with no regeneration ("TUPI ficou quase sempre [não confirmado]").
+- R1 flagged 3 drafts: 1 fixed by a regeneration (a03 r2), 2 redacted (a08 r0, a05 r0).
+- Token projection: 52 follow-up calls, none below the actual prompt (minimum 41 above).
+- Cost: US$ 0.2166 (solver US$ 0.0305, grader US$ 0.1861), US$ 0.0020 solver per answer,
+  12.8 s per answer. The cases are the heavy ones, so not comparable with 4.5.1's means.
+
 **Before the repository goes public:** one final full run of instrument v3 and of agent-v1
 on the same commit, and the README numbers taken from those two runs. D22, D23 and D26
 change the system prompt, so they change the behaviour on every case, and the results above

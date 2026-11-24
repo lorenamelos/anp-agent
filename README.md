@@ -161,6 +161,27 @@ The agent's own 13 questions ([agent_evals/cases_agent.yaml](agent_evals/cases_a
 
 Cost: US$ 0.45 for the 39 answers, grader included.
 
+After fixes for these failures (`search_field_groups` before every lookup, an
+`annual_volume` calculator operation, a readable emergency answer, periods left open stated
+in the answer), the affected cases ran again, with a new one, a field that does not exist
+(a14):
+
+| Case | First run | After the fixes |
+|---|---|---|
+| a03 Lula vs Mero | 1/3 | 3/3 |
+| a05 budget stress | 1/3 | 0/3 |
+| a08 investment advice | 2/3 | 2/3 |
+| a12 Búzios per year | 0/3 | 3/3 |
+| a14 nonexistent field | | 3/3 |
+
+- One failure was labelled `wrong_number` by the grader (a08). No number in that answer is
+  wrong: the grader's reason is a stray sentence left by a regeneration and a removal, and
+  a statement about the onshore trend. Details in the design, section 4.5.2.
+- a05 asks for the 10 largest fields of 2025, and no tool ranks by a past year within the
+  call cap; the agent ranked by the latest month and said so. See Known limits.
+
+These numbers are partial (5 cases) and predate the final runs on one commit.
+
 ## Checking the check
 
 Before any LLM spend, the guardrail was replayed on the 126 graded answers that anp-mcp's own
@@ -194,6 +215,13 @@ real value by chance. In an offline probe on 126 graded answers (each stated num
 R1 also checks numbers only: a wrong entity, a wrong explanation, or a right number attached
 to the wrong field or month passes it. Details: [docs/design.md](docs/design.md), section 4.4
 and risks.
+
+anp-mcp has no ranking by a past period: its lists order by the latest month or by a recent
+change. A question such as "the 10 largest fields of 2025" would need the 2025 series of
+more field groups than the 6-call cap allows, so the agent can only rank by a stated proxy.
+
+Removing a number can leave a sentence that reads badly ("[não confirmado]" in place of a
+range), most often in final mode, where there is no regeneration.
 
 ## Development
 

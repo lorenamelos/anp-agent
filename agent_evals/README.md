@@ -38,13 +38,14 @@ alone does not count.
 
 ## Instrument agent-v1
 
-The agent's own cases (`cases_agent.yaml`, a01–a13), with the same runner, grader and
+The agent's own cases (`cases_agent.yaml`, a01–a14), with the same runner, grader and
 prices: multi-step questions (a share of the national total, a ranking followed by lookups,
 an old field name, year over year), a question that needs more calls than the cap allows,
 refusals (prices, a forecast, investment advice, another country), a partial refusal, an
-over-refusal check, a derivation the guardrail must see grounded, and v3 q17 again as a
-regression case. Expected values come from `ground_truth_agent.py`, which imports anp-mcp's
-`ground_truth.py` (unchanged) and adds keys, each a query on the same dataset files.
+over-refusal check, a derivation the guardrail must see grounded, a field that does not
+exist, and v3 q17 again as a regression case. Expected values come from
+`ground_truth_agent.py`, which imports anp-mcp's `ground_truth.py` (unchanged) and adds
+keys, each a query on the same dataset files.
 
 ```bash
 uv run python -m agent_evals.ground_truth_agent                  # the expected values
