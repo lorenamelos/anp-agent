@@ -3,6 +3,7 @@ from anp_agent.budget import Usage
 from anp_agent.llm import load_prices, usd
 
 RESULT = {
+    "draft": "Búzios: 1.197.657 bbl/d.",
     "answer": "Búzios: 1.197.657 bbl/d.\n\nFontes: field_group_production(BÚZIOS)",
     "status": "answered", "usd_used": 0.0012, "regen_count": 1, "removed": [],
     "reports": [{"ok": False, "ungrounded": ["35%"]}, {"ok": True, "ungrounded": []}],
@@ -27,12 +28,20 @@ def test_as_run_matches_the_harness_shape():
     assert run["calls"][1] == {"name": "calculate", "args": {"operation": "sum", "values": [1, 2]},
                                "result": "error: 1 is not in", "is_error": True}
     assert run["seconds"] == 3.2
+    assert run["answer"] == "Búzios: 1.197.657 bbl/d."  # the model's text, no footer
+
+
+def test_graded_text_without_model_text():
+    fixed = {"status": "tool_unavailable", "answer": "Não foi possível acessar os dados."}
+    assert as_run(fixed, 0)["answer"] == "Não foi possível acessar os dados."
+    assert as_run({"status": "error", "error": "timed out"}, 0)["answer"] == "timed out"
 
 
 def test_agent_fields():
     f = agent_fields(RESULT, "abc1234")
     assert f["regenerated"] and f["ungrounded_before_regen"] == ["35%"]
     assert f["ungrounded_final"] == [] and f["agent_commit"] == "abc1234"
+    assert f["answer_full"].endswith("Fontes: field_group_production(BÚZIOS)")
 
 
 def test_solver_cost_in_the_harness_costs_matches_ours():

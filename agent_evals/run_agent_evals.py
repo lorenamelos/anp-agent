@@ -54,6 +54,15 @@ def git_commit(path: Path) -> str:
     return commit + ("-dirty" if git("status", "--porcelain", "--untracked-files=no") else "")
 
 
+def graded_text(result: dict) -> str:
+    """What the grader reads: the model's text after redaction, without the notices and the
+    footer, which code writes and no tool result states (design, section 4.1). When no model
+    text exists (server unavailable, no LLM call fitted, an error), the answer as shown."""
+    if result.get("status") not in ("tool_unavailable", "error") and result.get("draft"):
+        return result["draft"]
+    return result.get("answer") or result.get("error", "")
+
+
 def as_run(result: dict, seconds: float) -> dict:
     """The agent's result in the shape of the harness's `ask()`."""
     records = result.get("tool_records", [])
@@ -61,13 +70,14 @@ def as_run(result: dict, seconds: float) -> dict:
               "is_error": r["status"] != "ok"} for r in records]
     tokens = {key: sum(e.get(kind, 0) for e in result.get("llm_log", []))
               for kind, key in TOKEN_KEYS.items()}
-    return {"answer": result.get("answer") or result.get("error", ""), "calls": calls,
+    return {"answer": graded_text(result), "calls": calls,
             "solver_usd": result.get("usd_used", 0.0), **tokens, "seconds": round(seconds, 1)}
 
 
 def agent_fields(result: dict, agent_commit: str) -> dict:
     reports = result.get("reports", [])
     return {
+        "answer_full": result.get("answer") or result.get("error", ""),
         "status": result.get("status"), "error": result.get("error"),
         "regenerated": result.get("regen_count", 0) > 0,
         "ungrounded_before_regen": reports[0]["ungrounded"] if reports else [],

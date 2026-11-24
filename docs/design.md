@@ -445,6 +445,13 @@ of the harness schema, so `report.py` reads them as is, plus agent fields that i
 `budget_reached`, `tool_calls_used`, `calculator_calls_used`, `llm_calls`, `agent_commit`.
 The package name is `agent_evals`, not `evals`, to avoid a clash with the vendored package.
 
+The grader reads the model's text after redaction (`answer`), without the notices and the
+footer: code writes those, no tool result states them, and the grader's grounding rule would
+fail an answer for "data may still be revised by ANP" (the pilot run did, once in two). The
+harness graded the model's text too. The whole answer as the user sees it is kept in
+`answer_full`. When there is no model text (server unavailable, no LLM call fitted, an
+error), the answer as shown is graded.
+
 Calculator calls appear in `calls` like any other tool call, so the grader sees them in the
 trace. The `tool_ok` check of the harness ("a data question must be answered from some
 tool") counts anp-mcp calls only: a calculator call alone does not satisfy it.
