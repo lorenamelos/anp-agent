@@ -100,6 +100,42 @@ Environment variables, all optional:
 
 The anp-mcp server's own variables (`ANP_MCP_REVISION`, `ANP_MCP_DATA_DIR`) are passed through.
 
+## Results
+
+The agent ran anp-mcp's eval instrument v3 (21 questions, 3 repeats each, the same grader,
+ground truth and prices as anp-mcp's own runs) with Claude Haiku 5.5, next to anp-mcp's Haiku
+v3 run, which used the plain tool loop of its harness:
+
+| | anp-mcp harness (v3) | agent |
+|---|---|---|
+| Pass rate | 87% (55/63) | 90% (57/63) |
+| Failed for a wrong number (`wrong_number`) | **5** | **0** |
+| Failed as `ungrounded` | 2 | 3 (none of them a number) |
+| Other failures | 1 `other` | 3 `incomplete` |
+| Solver cost per answer | US$ 0.00061 | US$ 0.00087 (+43%) |
+| Tokens per answer (mean / p95 / max) | 7,350 / 13,018 / 17,107 | 12,302 / 27,080 / 31,878 (+67% mean) |
+| Seconds per answer | 5.3 | 6.3 (+1 s) |
+
+**The main finding: no answer failed for a wrong number, against 5 in the harness run.** The
+pass rates (90% against 87%) differ by 2 answers in 63, which is not a significant
+difference. The price is +43% solver cost per answer, +67% tokens and +1 s, from the extra
+turns for the calculator and the regenerations.
+
+- The 3 `ungrounded` failures are statements, not numbers ("Sul de Tupi is a separate
+  group", "Bacalhau was the second", what Maricá's royalties are based on): the known limit
+  of R1, which checks numbers only.
+- 2 of the 3 `incomplete` are the same question (the worst month of the national
+  reconciliation), where the model asked for the full month-by-month detail and the history
+  it re-sends hit the 40,000-token limit; the agent then answered with the raw tool results.
+  The prompt now asks for that detail only when the question needs it.
+- The guardrail flagged 4 drafts; one regeneration fixed 3 of them, and 1 number was
+  redacted (that answer still passed). The calculator was used in 21 answers (35 calls, 1
+  rejected input). No call was refused by the call caps.
+
+The grader reads the model's text after redaction, without the notices and the footer, as
+the harness graded the model's text (details in [agent_evals/README.md](agent_evals/README.md)).
+Total cost of the run, grader included: US$ 0.63.
+
 ## Checking the check
 
 Before any LLM spend, the guardrail was replayed on the 126 graded answers that anp-mcp's own

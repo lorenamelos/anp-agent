@@ -16,7 +16,7 @@ def test_usage_counts_every_kind_alike():
 
 
 def test_estimate_and_next_prompt():
-    assert estimate_tokens("x" * 101) == 51
+    assert estimate_tokens("x" * 101) == 57  # 101 / 1.8, rounded up
     assert estimate_tokens({"a": 1}) == estimate_tokens('{"a": 1}')
     assert next_prompt(None, 0, initial=4000) == 4000
     last = Usage(input=300, output=200, cache_read=5000, cache_write=1000)

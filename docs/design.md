@@ -396,9 +396,11 @@ fit, no call is made. Regeneration is offered only when one more call fits.
 
 The last call's prompt is known exactly from its `usage` (input + cache read + cache write,
 plus its output, which the next call re-sends). Only the messages added since (tool results,
-the regeneration feedback) and the first prompt are estimated, on the high side, at 2
-characters per token plus 50 tokens per added message (the eval pilot measured up to 66
-tokens of fixed per-message cost the text does not show): JSON full of digits takes more tokens per character than prose, and an
+the regeneration feedback) and the first prompt are estimated, on the high side, at 1.8
+characters per token plus 50 tokens per added message. Both come from the eval runs: the
+pilot measured up to 66 tokens of fixed per-message cost the text does not show, and the
+full v3 run about 1.93 characters per token on long numeric series (2.0, the first value,
+was 509 tokens short on one answer): JSON full of digits takes more tokens per character than prose, and an
 overestimate only moves a call into final mode earlier. The eval run records the estimate
 next to the real input of the following call, to check that it stays on the high side.
 Because the projection includes the full `max_output_tokens`, the 40,000-token limit is
@@ -561,7 +563,48 @@ Caveat: stored tool results are cut at 6,000 characters; records where a result 
 are reported separately, since a flag there may be an artefact. Stored results are text, so
 the replay parses them as JSON; a result that does not parse is reported, not guessed.
 
-### 4.5 Tests (pytest, no network by default)
+### 4.5 Results: instrument v3 (2026-11-24)
+
+Run `20261124T002620Z`, agent `63c01b9`, anp-mcp `a313249`, Haiku 5.5 solver, Sonnet 5.5
+grader, 21 cases × 3, dataset v2026.09; compared with anp-mcp's Haiku v3 run.
+
+| | anp-mcp harness (v3) | agent |
+|---|---|---|
+| Pass rate | 87% (55/63) | 90% (57/63) |
+| Failed for a wrong number (`wrong_number`) | **5** | **0** |
+| Failed as `ungrounded` | 2 | 3 (none of them a number) |
+| Other failures | 1 `other` | 3 `incomplete` |
+| Solver cost per answer | US$ 0.00061 | US$ 0.00087 (+43%) |
+| Tokens per answer (mean / p95 / max) | 7,350 / 13,018 / 17,107 | 12,302 / 27,080 / 31,878 (+67% mean) |
+| Seconds per answer | 5.3 | 6.3 (+1 s) |
+
+- **Main finding: 0 failures for a wrong number, against 5.** The pass rates differ by 2
+  answers in 63, not a significant difference.
+- The cost of the change: +43% solver cost per answer, +67% tokens, +1 s.
+- The 3 `ungrounded` failures are non-numeric statements, which confirms the known limit of
+  R1 (risk 4).
+- R4: q17 r0 and r2 hit the token limit (about 31.5k used) after the model asked for
+  `national_reconciliation(details=True)`, whose result (about 11k tokens) is re-sent on
+  every turn; no LLM call fitted and the deterministic answer was graded `incomplete`. A
+  final call without tools would not have fitted either (about 46k projected), so D21 played
+  no part. The system prompt now asks for `details=true` only when the question needs
+  month-by-month values; q17 is a regression case in agent-v1 to measure the effect. q11
+  reached the anp-mcp cap (r0) and the calculator cap (r1) and passed. No call was refused
+  by a cap.
+- R1: 4 drafts flagged, 4 regenerations, 3 fixed, 1 redaction (q07 r0, the answer passed).
+  The q19 "since 2024" case (D20) was fixed by regeneration.
+- Token projection: 125 follow-up calls, 4 below the actual prompt (q04 ×3 by 29 tokens,
+  q21 r1 by 509 on a long monthly series), so the estimate moved from 2.0 to 1.8 characters
+  per token.
+- Cost: US$ 0.632 for the run (solver US$ 0.055, grader US$ 0.578), plus US$ 0.025 for the
+  2-question pilot.
+
+Future idea, not done: the cache breakpoint covers only the tools and the system prompt
+(2,515 tokens), so the conversation history is re-sent uncached on every turn. A breakpoint
+on the latest message would make the re-sent history a cache read (cheaper); it would not
+change the token limit, which counts every kind alike.
+
+### 4.6 Tests (pytest, no network by default)
 
 - Extraction and matching: table-driven cases for pt-BR and en formats, scale words, units,
   ranges, hedges, signs, dates, list markers, numbers from the question.

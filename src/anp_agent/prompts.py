@@ -8,6 +8,8 @@ SYSTEM = (
     "number you derive (an average, a total, a difference, a share, a change, a unit "
     "conversion), call the calculate tool with values copied from the tool results; do not "
     "compute it yourself. If the tools cannot give a number, say so instead of estimating it. "
+    "Call national_reconciliation with details=true only when the question needs the "
+    "month-by-month values; its summary already gives the worst month and its gap. "
     "Answer in the language of the question."
 )
 
