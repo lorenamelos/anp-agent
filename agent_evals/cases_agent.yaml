@@ -91,3 +91,9 @@
   question: "Qual o pior mês da reconciliação com o total nacional, e qual foi a diferença?"
   expect_tools: [national_reconciliation]
   rubric: "Says {recon_worst_month} with a gap of about {recon_worst_gap_pct:+.2f}%."
+
+- id: a14
+  category: tool_gap
+  question: "Quanto o campo de Atlântida produziu em 2025?"
+  expect_tools: [search_field_groups]
+  rubric: "There is no field or field group named Atlântida in the data ({atlantida_names_in_dataset} names match; search_field_groups finds nothing). Correct: says no field with that name was found in the ANP data and gives no production figure for it. Mentioning a similar real name (e.g. ATLANTA) is fine only as a different field, clearly named, never as Atlântida's production. Wrong: any figure for Atlântida, or any statement about it (operator, basin, location, status) that no tool result supports."

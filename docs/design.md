@@ -260,8 +260,10 @@ A deterministic tool offered to the model next to the anp-mcp tools. It lives in
 repository; anp-mcp is not changed.
 
 ```text
-calculate(operation, values, unit=None, to_unit=None, month=None, year=None, percent=False)
+calculate(operation, values, unit=None, to_unit=None, month=None, year=None, percent=False,
+          months=None)
   operation: sum | mean | difference | ratio | percent_change | multiply | convert
+             | annual_volume
   values:    list of numbers, each copied from a tool result of this question
   -> {"operation", "inputs", "result", "unit"}
 ```
@@ -386,9 +388,18 @@ because a call cannot be stopped halfway:
 projected = tokens_used + (input tokens of the last call + tokens added since) + max_output_tokens
 projected <= limit            -> normal call (final mode if a cap was reached or it is the
                                  last allowed LLM call)
-projected >  limit            -> no LLM call: deterministic answer listing the tool results
-                                 obtained (as returned, unformatted) and what was not done
+projected >  limit            -> no LLM call: deterministic answer from the tool results
+                                 obtained (emergency.py, below) and what was not done
 ```
+
+**The emergency answer** (no LLM call fits; D25) is written by code, with no raw JSON: one
+sentence saying the limit was reached; what the data obtained shows, as each successful
+call's own values, labelled and with units in the question's language (a time series shows
+its latest 12 rows, a ranking its top 12, with a count of the rows left out); then the
+queries made and those left out (refused calls, and the conclusion when the token limit was
+the cause). Every value is a tool result's leaf, so the guardrail grounds all of them (tested
+on the real a03 and a05 records of the first agent-v1 run). The R4 notice is not added on top,
+since the answer already lists what was left out.
 
 Since final mode keeps the tool definitions (D21), a final call costs as much as a normal
 one, so the token limit has no "final call without tools" step: when the next call does not
@@ -474,9 +485,13 @@ the way answers are checked changes.
 
 ### 4.2 New question types: instrument agent-v1
 
-The 13 cases are in `agent_evals/cases_agent.yaml` (a01–a13), their expected values in
+The cases are in `agent_evals/cases_agent.yaml` (a01–a14), their expected values in
 `agent_evals/ground_truth_agent.py`; the runner takes `--instrument agent-v1`. a13 repeats
 v3 q17 unchanged, as a regression case for the `details=true` prompt change (section 4.5).
+a14 was added after the first run: a field that does not exist ("Atlântida": no field or
+group name matches it, accents ignored, while the same query finds ATLANTA and BÚZIOS), to
+test R3. Adding a case does not change how the other cases are checked, so the instrument
+stays agent-v1.
 The types, with the first wording of each:
 
 | Type | Example | What the rubric checks |
@@ -742,3 +757,7 @@ anp-agent/
 | D19 | Trailing zeros are written digits by default ("40.000" is exact to the unit); rounding them stays a configurable policy. |
 | D20 | No specific rule for a number grounded only by the default of a tool that was not called; regeneration handles it. |
 | D21 | Final mode keeps the tool definitions and sends `tool_choice: none`, instead of calling the model with no tools bound. Checked on 2026-11-23 with Haiku 5.5 (2 calls, US$ 0.000325): a request with `tool_use`/`tool_result` blocks and **no** tool definitions is accepted (HTTP 200, `req_011ChLjtHFkW65bxX7PXNnhf`), so dropping the tools was possible after all; `tool_choice: none` with the tools is accepted and the model answered in text, with no `tool_use` block (`req_011ChLjtQKQbk98ccM7uV8xj`). Kept anyway: the "fits only without tools" step would only matter within about 2,000 tokens of the 40,000 limit, and the worst Haiku answer measured was 17,107 tokens; one more code path, which also loses the cache, does not pay for so rare a case. To be revisited if the evals show questions near the limit. |
+| D22 | The system prompt asks for `search_field_groups` before every `field_group_production` call (agent-v1 a03 lost 2 of its 6 calls to "Lula" and "Mero", which match no group name). |
+| D23 | R3 reinforced in the prompt: nothing about fields, operators, rankings or groups that no tool result of the question states (five failures for such statements across the two runs: v3 q03, q10, q18; agent-v1 a05 r1, a08 r0). Still a prompt rule; R1 does not check statements. |
+| D24 | Calculator operation `annual_volume`: a year's monthly bbl/d values with their months, each checked against the source row of that month, summed with each month's days, in barrels; one call for a yearly volume (agent-v1 a12 ran out of calculator calls converting year by year). |
+| D25 | The emergency answer is readable and deterministic (section 3): no raw JSON, only the tools' values, then the queries made and left out. |

@@ -182,9 +182,12 @@ def test_no_llm_call_fits_the_token_limit():
                       toolbox=FakeToolbox({"field_group_production": big}))
     assert len(llm.requests) == 1  # the second call would not fit
     assert out["status"] == "budget_reached" and out["token_limited"]
-    assert out["answer"].startswith("Não foi possível concluir a resposta dentro do limite")
-    assert "field_group_production(BÚZIOS, 2026-08..): {" in out["answer"]
-    assert "o limite de tokens foi atingido" in out["answer"]
+    assert out["answer"].startswith("O limite por pergunta foi atingido")
+    assert "- field_group_production(BÚZIOS, 2026-08..):\n  - (+240 meses anteriores omitidos)" \
+        in out["answer"]
+    assert "{" not in out["answer"]  # no raw JSON
+    assert "Ficaram de fora: a conclusão da resposta (limite de tokens)" in out["answer"]
+    assert "Resposta limitada pelo orçamento" not in out["answer"]  # no R4 notice on top
     assert out["tokens_used"] <= settings.max_tokens_per_question
 
 

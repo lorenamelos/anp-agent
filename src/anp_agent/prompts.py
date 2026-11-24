@@ -10,6 +10,10 @@ SYSTEM = (
     "compute it yourself. If the tools cannot give a number, say so instead of estimating it. "
     "Call national_reconciliation with details=true only when the question needs the "
     "month-by-month values; its summary already gives the worst month and its gap. "
+    "Before calling field_group_production, always call search_field_groups to find the "
+    "exact field group name, even when the name looks obvious. "
+    "Do not state anything about fields, operators, rankings or groups that did not come "
+    "from a tool result of this conversation; if the tools do not say it, leave it out. "
     "Answer in the language of the question."
 )
 
@@ -40,11 +44,6 @@ FEEDBACK = {
            "answer again."),
 }
 
-NO_LLM = {  # no LLM call fits the token limit (design, section 3)
-    "pt": "Não foi possível concluir a resposta dentro do limite por pergunta. Resultados obtidos:",
-    "en": "The answer could not be completed within the per-question limit. Results obtained:",
-}
-NO_RESULTS = {"pt": "(nenhum)", "en": "(none)"}
 UNAVAILABLE = {
     "pt": "Não foi possível acessar os dados (o servidor anp-mcp não respondeu).",
     "en": "Could not reach the data (the anp-mcp server did not respond).",

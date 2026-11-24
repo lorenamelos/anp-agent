@@ -1,0 +1,389 @@
+{
+ "source": "agent-v1 run 20261124T011041Z, a03 r0 (results cut at 6,000 characters regenerated from the same tool and arguments, dataset v2026.09)",
+ "question": "Lula produziu mais que Mero em 2025?",
+ "language": "pt",
+ "token_limited": true,
+ "not_executed": [
+  {
+   "name": "calculate",
+   "args": {
+    "operation": "percent_change",
+    "values": [
+     550142.583333,
+     837532
+    ],
+    "unit": "bbl/d"
+   }
+  }
+ ],
+ "tool_records": [
+  {
+   "call_id": "c0",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "Lula",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"Lula\",\n  \"unit\": \"bbl/d\",\n  \"months\": []\n}",
+   "structured": {
+    "field_group": "Lula",
+    "unit": "bbl/d",
+    "months": []
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c1",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "Mero",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"Mero\",\n  \"unit\": \"bbl/d\",\n  \"months\": []\n}",
+   "structured": {
+    "field_group": "Mero",
+    "unit": "bbl/d",
+    "months": []
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c2",
+   "name": "search_field_groups",
+   "args": {
+    "text": "Lula"
+   },
+   "result_text": "{\n  \"matches\": [\n    {\n      \"field_group\": \"TUPI\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 879206.0,\n      \"matched_fields\": [\n        \"ANC_LULA\",\n        \"LULA\",\n        \"SUL DE LULA\"\n      ],\n      \"grouping_reason\": \"Rename over time AND concurrent slice of one reservoir. Rename: LULA -> TUPI and SUL DE LULA -> SUL DE TUPI in 2020-07 (66/66 LULA wells continue as TUPI; 1,016.7 -> 987.5 kbbl/d). Slice: SUL DE TUPI takes 99.9% of its volume from 62 wells shared with TUPI since 2020-07 (and SUL DE LULA 100% from 46\"\n    }\n  ],\n  \"unit\": \"bbl/d (oil + condensate)\"\n}",
+   "structured": {
+    "matches": [
+     {
+      "field_group": "TUPI",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 879206.0,
+      "matched_fields": [
+       "ANC_LULA",
+       "LULA",
+       "SUL DE LULA"
+      ],
+      "grouping_reason": "Rename over time AND concurrent slice of one reservoir. Rename: LULA -> TUPI and SUL DE LULA -> SUL DE TUPI in 2020-07 (66/66 LULA wells continue as TUPI; 1,016.7 -> 987.5 kbbl/d). Slice: SUL DE TUPI takes 99.9% of its volume from 62 wells shared with TUPI since 2020-07 (and SUL DE LULA 100% from 46"
+     }
+    ],
+    "unit": "bbl/d (oil + condensate)"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c3",
+   "name": "search_field_groups",
+   "args": {
+    "text": "Mero"
+   },
+   "result_text": "{\n  \"matches\": [\n    {\n      \"field_group\": \"MERO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 768752.0,\n      \"matched_fields\": [\n        \"ANC_MERO\"\n      ],\n      \"grouping_reason\": \"ANC_MERO (from 2022-01) is the unitised non-contracted area of MERO.\"\n    }\n  ],\n  \"unit\": \"bbl/d (oil + condensate)\"\n}",
+   "structured": {
+    "matches": [
+     {
+      "field_group": "MERO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 768752.0,
+      "matched_fields": [
+       "ANC_MERO"
+      ],
+      "grouping_reason": "ANC_MERO (from 2022-01) is the unitised non-contracted area of MERO."
+     }
+    ],
+    "unit": "bbl/d (oil + condensate)"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c4",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "TUPI",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"TUPI\",\n  \"unit\": \"bbl/d\",\n  \"months\": [\n    {\n      \"month\": \"2025-01\",\n      \"petroleum_bpd\": 838889.0,\n      \"active_wells\": 62\n    },\n    {\n      \"month\": \"2025-02\",\n      \"petroleum_bpd\": 808978.0,\n      \"active_wells\": 61\n    },\n    {\n      \"month\": \"2025-03\",\n      \"petroleum_bpd\": 829776.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-04\",\n      \"petroleum_bpd\": 832640.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-05\",\n      \"petroleum_bpd\": 875999.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-06\",\n      \"petroleum_bpd\": 845641.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-07\",\n      \"petroleum_bpd\": 850677.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-08\",\n      \"petroleum_bpd\": 830075.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-09\",\n      \"petroleum_bpd\": 871759.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-10\",\n      \"petroleum_bpd\": 834122.0,\n      \"active_wells\": 61\n    },\n    {\n      \"month\": \"2025-11\",\n      \"petroleum_bpd\": 727833.0,\n      \"active_wells\": 63\n    },\n    {\n      \"month\": \"2025-12\",\n      \"petroleum_bpd\": 903995.0,\n      \"active_wells\": 64\n    }\n  ]\n}",
+   "structured": {
+    "field_group": "TUPI",
+    "unit": "bbl/d",
+    "months": [
+     {
+      "month": "2025-01",
+      "petroleum_bpd": 838889.0,
+      "active_wells": 62
+     },
+     {
+      "month": "2025-02",
+      "petroleum_bpd": 808978.0,
+      "active_wells": 61
+     },
+     {
+      "month": "2025-03",
+      "petroleum_bpd": 829776.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-04",
+      "petroleum_bpd": 832640.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-05",
+      "petroleum_bpd": 875999.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-06",
+      "petroleum_bpd": 845641.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-07",
+      "petroleum_bpd": 850677.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-08",
+      "petroleum_bpd": 830075.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-09",
+      "petroleum_bpd": 871759.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-10",
+      "petroleum_bpd": 834122.0,
+      "active_wells": 61
+     },
+     {
+      "month": "2025-11",
+      "petroleum_bpd": 727833.0,
+      "active_wells": 63
+     },
+     {
+      "month": "2025-12",
+      "petroleum_bpd": 903995.0,
+      "active_wells": 64
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c5",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "MERO",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"MERO\",\n  \"unit\": \"bbl/d\",\n  \"months\": [\n    {\n      \"month\": \"2025-01\",\n      \"petroleum_bpd\": 439876.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-02\",\n      \"petroleum_bpd\": 444766.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-03\",\n      \"petroleum_bpd\": 470897.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-04\",\n      \"petroleum_bpd\": 472363.0,\n      \"active_wells\": 15\n    },\n    {\n      \"month\": \"2025-05\",\n      \"petroleum_bpd\": 517991.0,\n      \"active_wells\": 17\n    },\n    {\n      \"month\": \"2025-06\",\n      \"petroleum_bpd\": 543961.0,\n      \"active_wells\": 19\n    },\n    {\n      \"month\": \"2025-07\",\n      \"petroleum_bpd\": 607115.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-08\",\n      \"petroleum_bpd\": 544934.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-09\",\n      \"petroleum_bpd\": 629162.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-10\",\n      \"petroleum_bpd\": 652363.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-11\",\n      \"petroleum_bpd\": 643146.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-12\",\n      \"petroleum_bpd\": 635137.0,\n      \"active_wells\": 20\n    }\n  ]\n}",
+   "structured": {
+    "field_group": "MERO",
+    "unit": "bbl/d",
+    "months": [
+     {
+      "month": "2025-01",
+      "petroleum_bpd": 439876.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-02",
+      "petroleum_bpd": 444766.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-03",
+      "petroleum_bpd": 470897.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-04",
+      "petroleum_bpd": 472363.0,
+      "active_wells": 15
+     },
+     {
+      "month": "2025-05",
+      "petroleum_bpd": 517991.0,
+      "active_wells": 17
+     },
+     {
+      "month": "2025-06",
+      "petroleum_bpd": 543961.0,
+      "active_wells": 19
+     },
+     {
+      "month": "2025-07",
+      "petroleum_bpd": 607115.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-08",
+      "petroleum_bpd": 544934.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-09",
+      "petroleum_bpd": 629162.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-10",
+      "petroleum_bpd": 652363.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-11",
+      "petroleum_bpd": 643146.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-12",
+      "petroleum_bpd": 635137.0,
+      "active_wells": 20
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c6",
+   "name": "calculate",
+   "args": {
+    "operation": "mean",
+    "values": [
+     838889,
+     808978,
+     829776,
+     832640,
+     875999,
+     845641,
+     850677,
+     830075,
+     871759,
+     834122,
+     727833,
+     903995
+    ],
+    "unit": "bbl/d"
+   },
+   "result_text": "{\"operation\": \"mean\", \"inputs\": [838889, 808978, 829776, 832640, 875999, 845641, 850677, 830075, 871759, 834122, 727833, 903995], \"result\": 837532.0, \"unit\": \"bbl/d\"}",
+   "structured": {
+    "operation": "mean",
+    "inputs": [
+     838889,
+     808978,
+     829776,
+     832640,
+     875999,
+     845641,
+     850677,
+     830075,
+     871759,
+     834122,
+     727833,
+     903995
+    ],
+    "result": 837532.0,
+    "unit": "bbl/d"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c7",
+   "name": "calculate",
+   "args": {
+    "operation": "mean",
+    "values": [
+     439876,
+     444766,
+     470897,
+     472363,
+     517991,
+     543961,
+     607115,
+     544934,
+     629162,
+     652363,
+     643146,
+     635137
+    ],
+    "unit": "bbl/d"
+   },
+   "result_text": "{\"operation\": \"mean\", \"inputs\": [439876, 444766, 470897, 472363, 517991, 543961, 607115, 544934, 629162, 652363, 643146, 635137], \"result\": 550142.583333, \"unit\": \"bbl/d\"}",
+   "structured": {
+    "operation": "mean",
+    "inputs": [
+     439876,
+     444766,
+     470897,
+     472363,
+     517991,
+     543961,
+     607115,
+     544934,
+     629162,
+     652363,
+     643146,
+     635137
+    ],
+    "result": 550142.583333,
+    "unit": "bbl/d"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c8",
+   "name": "calculate",
+   "args": {
+    "operation": "difference",
+    "values": [
+     550142.583333,
+     837532
+    ],
+    "unit": "bbl/d"
+   },
+   "result_text": "{\"operation\": \"difference\", \"inputs\": [550142.583333, 837532], \"result\": 287389.416667, \"unit\": \"bbl/d\"}",
+   "structured": {
+    "operation": "difference",
+    "inputs": [
+     550142.583333,
+     837532
+    ],
+    "result": 287389.416667,
+    "unit": "bbl/d"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c9",
+   "name": "calculate",
+   "args": {
+    "operation": "percent_change",
+    "values": [
+     550142.583333,
+     837532
+    ],
+    "unit": "%"
+   },
+   "result_text": "error: 550142.583333 is not in this question's tool results; call a data tool first or copy the value exactly as the tool returned it",
+   "structured": null,
+   "status": "tool_error",
+   "seconds": 0.0
+  }
+ ]
+}

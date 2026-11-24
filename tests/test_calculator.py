@@ -106,4 +106,61 @@ def test_schema_is_a_tool_definition():
     props = SCHEMA["input_schema"]["properties"]
     assert set(SCHEMA["input_schema"]["required"]) == {"operation", "values"}
     assert set(props["operation"]["enum"]) == {
-        "sum", "mean", "difference", "ratio", "percent_change", "multiply", "convert"}
+        "sum", "mean", "difference", "ratio", "percent_change", "multiply", "convert",
+        "annual_volume"}
+
+
+def series(year, months):
+    return {"field_group": "BÚZIOS", "unit": "bbl/d", "months": [
+        {"month": f"{year}-{m:02d}", "petroleum_bpd": 1000.0 * m} for m in months]}
+
+
+def test_annual_volume_weights_each_month_by_its_days():
+    # 2025-02: 28 days, 2024-02: 29, 2025-04: 30, 2025-01: 31
+    s = sources(series(2025, [1, 2, 4]))
+    out = calc(s, operation="annual_volume", values=[1000, 2000, 4000],
+               months=["2025-01", "2025-02", "2025-04"])
+    assert out == {"operation": "annual_volume", "inputs": [1000, 2000, 4000],
+                   "result": 1000 * 31 + 2000 * 28 + 4000 * 30, "unit": "bbl"}
+    leap = sources(series(2024, [2]))
+    assert calc(leap, operation="annual_volume", values=[2000],
+                months=["2024-02"])["result"] == 2000 * 29
+
+
+def test_annual_volume_of_a_full_year_matches_the_ground_truth_formula():
+    s = sources(series(2025, range(1, 13)))
+    out = calc(s, operation="annual_volume", values=[1000.0 * m for m in range(1, 13)],
+               months=[f"2025-{m:02d}" for m in range(1, 13)])
+    days = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
+    assert out["result"] == sum(1000 * m * d for m, d in zip(range(1, 13), days, strict=True))
+
+
+def test_annual_volume_values_must_belong_to_their_month():
+    s = sources(series(2025, [1, 2]))
+    with pytest.raises(CalcError, match="2000 is not the 2025-01 value"):
+        calc(s, operation="annual_volume", values=[2000, 1000], months=["2025-01", "2025-02"])
+    with pytest.raises(CalcError, match="is not the 2025-03 value"):  # no such row
+        calc(s, operation="annual_volume", values=[1000], months=["2025-03"])
+
+
+@pytest.mark.parametrize("months, message", [
+    (None, "needs months"),
+    (["2025-01"], "one per value"),
+    (["2025-1", "2025-02"], "needs months"),
+    (["2025-01", "2025-01"], "distinct months of a single year"),
+    (["2024-12", "2025-01"], "distinct months of a single year"),
+])
+def test_annual_volume_bad_months(months, message):
+    s = sources(series(2025, [1, 2]), series(2024, [12]))
+    with pytest.raises(CalcError, match=message):
+        calc(s, operation="annual_volume", values=[1000, 2000], months=months)
+
+
+def test_annual_volume_grounds_the_answer():
+    s = sources(series(2025, [1, 2]))
+    args = {"operation": "annual_volume", "values": [1000, 2000], "months": ["2025-01", "2025-02"]}
+    out = calculate(args, s)
+    add_result(s, 2, args, out)
+    report = check("Em jan–fev/2025 foram 87.000 barris.", s)
+    volume = next(v for v in report.verdicts if v.claim.kind == "quantity")
+    assert report.ok and volume.used[0].until == "2025-02"

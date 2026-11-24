@@ -12,6 +12,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "vendor" / "anp-mcp"))
+from anp_mcp.server import data_file
 from evals.ground_truth import compute as compute_v3
 from evals.ground_truth import connect, one
 
@@ -58,6 +59,11 @@ def compute() -> dict:
     t["buzios_2025_total_bbl"] = one(con, f"""SELECT sum(petroleum_bpd * {DAYS}) FROM g
                                              WHERE field_group = 'BÚZIOS'
                                                AND year(period) = 2025""")
+    # a field that does not exist (R3): no field or group name contains it, accents ignored
+    t["atlantida_names_in_dataset"] = one(con, f"""
+        SELECT count(*) FROM read_csv_auto('{data_file("field_groups.csv")}', all_varchar=true)
+        WHERE strip_accents(upper(field)) LIKE '%ATLANTIDA%'
+           OR strip_accents(upper(field_group)) LIKE '%ATLANTIDA%'""")
     t["latest_month"] = latest
     return t
 

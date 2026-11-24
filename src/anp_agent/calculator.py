@@ -17,7 +17,9 @@ from anp_agent.guardrail.match import Candidate, Policy, candidates, find
 from anp_agent.guardrail.sources import BBL_TO_M3, Source, Sources
 
 NAME = "calculate"
-OPERATIONS = ("sum", "mean", "difference", "ratio", "percent_change", "multiply", "convert")
+OPERATIONS = ("sum", "mean", "difference", "ratio", "percent_change", "multiply", "convert",
+              "annual_volume")
+MONTH_RE = re.compile(r"((?:19|20)\d{2})-(0[1-9]|1[0-2])")
 UNITS = ("bbl/d", "m3/d", "bbl", "%", "wells")
 INPUT_POLICY = Policy(trailing_zeros=False)
 
@@ -34,7 +36,11 @@ SCHEMA = {
         "- percent_change: [before, after] -> 100 * (after / before - 1), in %.\n"
         "- multiply: [a, b] -> a * b; with percent=true, a is a percentage (a% of b).\n"
         "- convert: [value in bbl/d] -> to_unit 'm3/d', or 'bbl' in a month (month='YYYY-MM') "
-        "or in a year (year=YYYY)."
+        "or in a year (year=YYYY).\n"
+        "- annual_volume: the monthly bbl/d values of one year, with months=['YYYY-MM', ...] "
+        "in the same order -> the year's volume in barrels (each value times the days of its "
+        "month, summed). Each value must be the one the tool returned for that month. Use it "
+        "for a yearly total in barrels, in one call."
     ),
     "input_schema": {
         "type": "object",
@@ -45,6 +51,8 @@ SCHEMA = {
                      "description": "Unit of the values (of b, for multiply)."},
             "to_unit": {"type": "string", "enum": ["m3/d", "bbl"]},
             "month": {"type": "string", "description": "YYYY-MM, for convert to bbl."},
+            "months": {"type": "array", "items": {"type": "string"},
+                       "description": "annual_volume: the month (YYYY-MM) of each value."},
             "year": {"type": "integer", "description": "For convert to bbl in a year."},
             "percent": {"type": "boolean", "description": "multiply: a is a percentage."},
         },
@@ -74,8 +82,19 @@ def calculate(args: dict, sources: Sources) -> dict:
     arity = {"difference": 2, "ratio": 2, "percent_change": 2, "multiply": 2, "convert": 1}
     if op in arity and len(values) != arity[op]:
         raise CalcError(f"{op} takes {arity[op]} value(s), got {len(values)}")
-    units = _input_units(args)
     cands = candidates(sources)
+    if op == "annual_volume":
+        months = _annual_months(args, values)
+        for value, month in zip(values, months, strict=True):
+            rows = [c for c in cands if c.month == month]
+            if _input(value, "bbl/d", rows) is None:
+                raise CalcError(
+                    f"{_plain(value)} is not the {month} value in this question's tool results; "
+                    "copy each month's bbl/d exactly as the tool returned it")
+        result = sum(v * calendar.monthrange(int(m[:4]), int(m[5:]))[1]
+                     for v, m in zip(values, months, strict=True))
+        return {"operation": op, "inputs": values, "result": round(result, 6), "unit": "bbl"}
+    units = _input_units(args)
     for value, u in zip(values, units, strict=True):
         if _input(value, u, cands) is None:
             raise CalcError(
@@ -91,7 +110,20 @@ def _plain(value: float) -> str:
     return f"{value:.10f}".rstrip("0").rstrip(".")
 
 
+def _annual_months(args: dict, values: list[float]) -> list[str]:
+    """The months of an annual_volume call: one per value, distinct, all in one year."""
+    months = args.get("months")
+    if (not isinstance(months, list) or len(months) != len(values)
+            or not all(isinstance(m, str) and MONTH_RE.fullmatch(m) for m in months)):
+        raise CalcError("annual_volume needs months=['YYYY-MM', ...], one per value")
+    if len(set(months)) != len(months) or len({m[:4] for m in months}) != 1:
+        raise CalcError("annual_volume takes distinct months of a single year")
+    return months
+
+
 def _input_units(args: dict) -> list[str | None]:
+    if args["operation"] == "annual_volume":
+        return ["bbl/d"] * len(args["values"])
     units = [args.get("unit")] * len(args["values"])
     if args["operation"] == "multiply" and args.get("percent"):
         units[0] = "%"
@@ -137,7 +169,7 @@ def _convert(value: float, args: dict):
     if to_unit != "bbl":
         raise CalcError("convert needs to_unit 'm3/d' or 'bbl'")
     if month is not None:
-        m = re.fullmatch(r"((?:19|20)\d{2})-(0[1-9]|1[0-2])", str(month))
+        m = MONTH_RE.fullmatch(str(month))
         if not m:
             raise CalcError("month must be YYYY-MM")
         return value * calendar.monthrange(int(m.group(1)), int(m.group(2)))[1], "bbl"

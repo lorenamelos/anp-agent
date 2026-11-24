@@ -1,0 +1,1201 @@
+{
+ "source": "agent-v1 run 20261124T011041Z, a05 r0 (results cut at 6,000 characters regenerated from the same tool and arguments, dataset v2026.09)",
+ "question": "Compare mês a mês em 2025 a produção dos 10 maiores campos.",
+ "language": "pt",
+ "token_limited": true,
+ "not_executed": [
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "JUBARTE",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "SÉPIA",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "ITAPU",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "ATAPU",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "BACALHAU",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "BERBIGÃO",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "PEREGRINO",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "MARLIM SUL",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "LAPA",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  },
+  {
+   "name": "field_group_production",
+   "args": {
+    "field_group": "MARLIM",
+    "start": "2025-01",
+    "end": "2025-12"
+   }
+  }
+ ],
+ "tool_records": [
+  {
+   "call_id": "c0",
+   "name": "search_field_groups",
+   "args": {
+    "text": "a",
+    "limit": 50
+   },
+   "result_text": "{\n  \"matches\": [\n    {\n      \"field_group\": \"BÚZIOS\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 1197657.0,\n      \"matched_fields\": [\n        \"TAMBUATÁ\"\n      ],\n      \"grouping_reason\": \"BÚZIOS_ECO (from 2021-09) is the transfer-of-rights surplus over the same reservoir. Same-wells test: TAMBUATÁ: 38 shared wells 2019-10..2026-09; 100% of TAMBUATÁ volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"TUPI\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 879206.0,\n      \"matched_fields\": [\n        \"ANC_LULA\",\n        \"ANC_TUPI\",\n        \"LULA\",\n        \"SUL DE LULA\"\n      ],\n      \"grouping_reason\": \"Rename over time AND concurrent slice of one reservoir. Rename: LULA -> TUPI and SUL DE LULA -> SUL DE TUPI in 2020-07 (66/66 LULA wells continue as TUPI; 1,016.7 -> 987.5 kbbl/d). Slice: SUL DE TUPI takes 99.9% of its volume from 62 wells shared with TUPI since 2020-07 (and SUL DE LULA 100% from 46\"\n    },\n    {\n      \"field_group\": \"MERO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 768752.0,\n      \"matched_fields\": [\n        \"ANC_MERO\"\n      ],\n      \"grouping_reason\": \"ANC_MERO (from 2022-01) is the unitised non-contracted area of MERO.\"\n    },\n    {\n      \"field_group\": \"JUBARTE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 174239.0,\n      \"matched_fields\": [\n        \"ANC_JUBARTE_NORDESTE\",\n        \"ANC_JUBARTE_SUDOESTE\",\n        \"BALEIA AZUL\",\n        \"BALEIA FRANCA\",\n        \"CACHALOTE\",\n        \"PIRAMBU\"\n      ],\n      \"grouping_reason\": \"Parque das Baleias fields unified into JUBARTE in 2019-05 (CACHALOTE, BALEIA AZUL, BALEIA FRANCA, PIRAMBU end in 2019-04; their wells report as JUBARTE from 2019-05; combined 225.8 kbbl/d in 2019-04 vs JUBARTE 218.7 kbbl/d in 2019-05).\"\n    },\n    {\n      \"field_group\": \"SÉPIA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 163295.0,\n      \"matched_fields\": [\n        \"SÉPIA LESTE\",\n        \"SÉPIA_ECO\"\n      ],\n      \"grouping_reason\": \"SÉPIA_ECO (from 2022-05) is the surplus contract over SÉPIA. Same-wells test: SÉPIA LESTE: 5 shared wells 2021-08..2026-09; 100% of SÉPIA LESTE volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"ITAPU\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 153090.0,\n      \"matched_fields\": [\n        \"ITAPU_ECO\"\n      ],\n      \"grouping_reason\": \"ITAPU_ECO (from 2022-12) is the surplus contract over ITAPU.\"\n    },\n    {\n      \"field_group\": \"ATAPU\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 145847.0,\n      \"matched_fields\": [\n        \"ANC_NORTE_ATAPU\",\n        \"ATAPU_ECO\",\n        \"OESTE DE ATAPU\"\n      ],\n      \"grouping_reason\": \"ATAPU_ECO (from 2022-05) is the surplus contract over ATAPU. Same-wells test: ANC_NORTE_ATAPU: 6 shared wells 2020-06..2026-09; 100% of ANC_NORTE_ATAPU volume from shared wells; OESTE DE ATAPU: 6 shared wells 2020-06..2026-09; 100% of OESTE DE ATAPU volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"BACALHAU\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 144179.0,\n      \"matched_fields\": [\n        \"BACALHAU NORTE\"\n      ],\n      \"grouping_reason\": \"Same-wells test: BACALHAU: 3 shared wells 2025-10..2026-09; 96% of BACALHAU volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"BERBIGÃO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 131599.0,\n      \"matched_fields\": [\n        \"NORTE DE BERBIGÃO\",\n        \"SUL DE BERBIGÃO\"\n      ],\n      \"grouping_reason\": \"Same-wells test: NORTE DE BERBIGÃO: 10 shared wells 2026-05..2026-09; 100% of NORTE DE BERBIGÃO volume from shared wells; SUL DE BERBIGÃO: 10 shared wells 2026-05..2026-09; 100% of SUL DE BERBIGÃO volume from shared wells; SURURU: handover SURURU -> BERBIGÃO (100% of wells).\"\n    },\n    {\n      \"field_group\": \"PEREGRINO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 102949.0,\n      \"matched_fields\": [\n        \"PITANGOLA\"\n      ],\n      \"grouping_reason\": \"Same-wells test: PITANGOLA: 11 shared wells 2022-10..2026-09; 100% of PITANGOLA volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"MARLIM\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 87897.0,\n      \"matched_fields\": [\n        \"ANC_BRAVA\",\n        \"ESPADIM\"\n      ],\n      \"grouping_reason\": \"Same-wells test: ANC_BRAVA: handover ANC_BRAVA -> MARLIM (100% of wells); ESPADIM: 2 shared wells 2023-12..2026-09; 100% of ESPADIM volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"SAPINHOÁ\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 80519.0,\n      \"matched_fields\": [\n        \"NORDESTE DE SAPINHOÁ\",\n        \"NOROESTE DE SAPINHOA\",\n        \"NOROESTE DE SAPINHOÁ\",\n        \"SUDOESTE DE SAPINHOÁ\"\n      ],\n      \"grouping_reason\": \"Rename over time AND concurrent slice of one reservoir. Rename/spelling: NOROESTE DE SAPINHOA (until 2021-09) -> NOROESTE DE SAPINHOÁ (from 2021-10), 81% of wells continue. Slice: NOROESTE, NORDESTE and SUDOESTE DE SAPINHOÁ each take 100% of their volume from 16 wells shared with SAPINHOÁ (since 201\"\n    },\n    {\n      \"field_group\": \"MARLIM SUL\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 74645.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"LAPA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 69685.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"RONCADOR\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 61361.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"MARLIM LESTE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 54439.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"WAHOO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 37137.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"FRADE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 32040.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"TARTARUGA VERDE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 30859.0,\n      \"matched_fields\": [\n        \"ANC_TARTARUGA VERDE\",\n        \"ANC_TARTARUGA_VERDE\",\n        \"TARTARUGA VERDE SUDOESTE\"\n      ],\n      \"grouping_reason\": \"Unitised non-contracted area; spelled with a space (2018-10..12) and an underscore (later). Normalisation does not turn \\\"_\\\" into \\\" \\\", so both spellings are listed. Same-wells test: TARTARUGA VERDE SUDOESTE: 5 shared wells 2018-12..2026-09; 100% of TARTARUGA VERDE SUDOESTE volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"ATLANTA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 29723.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ALBACORA LESTE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 25600.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ARGONAUTA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 24278.0,\n      \"matched_fields\": [\n        \"ANC_ARGONAUTA_ME1\"\n      ],\n      \"grouping_reason\": \"Same-wells test: ANC_ARGONAUTA_ME1: 2 shared wells 2026-02..2026-09; 100% of ANC_ARGONAUTA_ME1 volume from shared wells.\"\n    },\n    {\n      \"field_group\": \"BAÚNA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 19037.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ESPADARTE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 17294.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"PAPA-TERRA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 16324.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"CARATINGA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 11529.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"BARRACUDA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 11006.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"MARIMBÁ\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 9625.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"CARAPEBA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 7840.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"CARMÓPOLIS\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 7539.0,\n      \"matched_fields\": [\n        \"CARMÓPOLIS NOROESTE\"\n      ],\n      \"grouping_reason\": \"Same-wells test: CARMÓPOLIS NOROESTE: handover CARMÓPOLIS NOROESTE -> CARMÓPOLIS (100% of wells).\"\n    },\n    {\n      \"field_group\": \"OSTRA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 7354.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"TUBARÃO MARTELO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 6067.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"CANTO DO AMARO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 5589.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"PA-1BRSA1083SES-SEAL-M-426\",\n      \"latest_month\": \"2020-03\",\n      \"latest_petroleum_bpd\": 4860.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"VOADOR\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 4338.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"PILAR\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 4136.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"BALEIA ANÃ\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 3504.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"URUGUÁ\",\n      \"latest_month\": \"2024-12\",\n      \"latest_petroleum_bpd\": 3369.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"FAZENDA ALEGRE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 3213.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"PARGO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 3075.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ESTREITO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2958.0,\n      \"matched_fields\": [\n        \"PA-1BRSA452-1BRSA453-POT-T-661\"\n      ],\n      \"grouping_reason\": \"Same-wells test: PA-1BRSA452-1BRSA453-POT-T-661: handover PA-1BRSA452-1BRSA453-POT-T-661 -> ESTREITO (100% of wells).\"\n    },\n    {\n      \"field_group\": \"ENCHOVA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2664.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"BURACICA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2612.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ABALONE\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2577.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"SERRA\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2288.0,\n      \"matched_fields\": [\n        \"ARATUM\",\n        \"MACAU\"\n      ],\n      \"grouping_reason\": \"Same-wells test: ARATUM: 56 shared wells 2017-04..2021-04; 80% of ARATUM volume from shared wells; MACAU: handover SERRA -> MACAU (100% of wells).\"\n    },\n    {\n      \"field_group\": \"SALINA CRISTAL\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2057.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"MEXILHÃO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2028.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ARAÇÁS\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 2022.0,\n      \"matched_fields\": [\n        \"MANDACARU\"\n      ],\n      \"grouping_reason\": \"Same-wells test: MANDACARU: handover MANDACARU -> ARAÇÁS (100% of wells).\"\n    },\n    {\n      \"field_group\": \"LIVRAMENTO\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 1812.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    },\n    {\n      \"field_group\": \"ALTO DO RODRIGUES\",\n      \"latest_month\": \"2026-09\",\n      \"latest_petroleum_bpd\": 1728.0,\n      \"matched_fields\": [],\n      \"grouping_reason\": null\n    }\n  ],\n  \"unit\": \"bbl/d (oil + condensate)\"\n}",
+   "structured": {
+    "matches": [
+     {
+      "field_group": "BÚZIOS",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 1197657.0,
+      "matched_fields": [
+       "TAMBUATÁ"
+      ],
+      "grouping_reason": "BÚZIOS_ECO (from 2021-09) is the transfer-of-rights surplus over the same reservoir. Same-wells test: TAMBUATÁ: 38 shared wells 2019-10..2026-09; 100% of TAMBUATÁ volume from shared wells."
+     },
+     {
+      "field_group": "TUPI",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 879206.0,
+      "matched_fields": [
+       "ANC_LULA",
+       "ANC_TUPI",
+       "LULA",
+       "SUL DE LULA"
+      ],
+      "grouping_reason": "Rename over time AND concurrent slice of one reservoir. Rename: LULA -> TUPI and SUL DE LULA -> SUL DE TUPI in 2020-07 (66/66 LULA wells continue as TUPI; 1,016.7 -> 987.5 kbbl/d). Slice: SUL DE TUPI takes 99.9% of its volume from 62 wells shared with TUPI since 2020-07 (and SUL DE LULA 100% from 46"
+     },
+     {
+      "field_group": "MERO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 768752.0,
+      "matched_fields": [
+       "ANC_MERO"
+      ],
+      "grouping_reason": "ANC_MERO (from 2022-01) is the unitised non-contracted area of MERO."
+     },
+     {
+      "field_group": "JUBARTE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 174239.0,
+      "matched_fields": [
+       "ANC_JUBARTE_NORDESTE",
+       "ANC_JUBARTE_SUDOESTE",
+       "BALEIA AZUL",
+       "BALEIA FRANCA",
+       "CACHALOTE",
+       "PIRAMBU"
+      ],
+      "grouping_reason": "Parque das Baleias fields unified into JUBARTE in 2019-05 (CACHALOTE, BALEIA AZUL, BALEIA FRANCA, PIRAMBU end in 2019-04; their wells report as JUBARTE from 2019-05; combined 225.8 kbbl/d in 2019-04 vs JUBARTE 218.7 kbbl/d in 2019-05)."
+     },
+     {
+      "field_group": "SÉPIA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 163295.0,
+      "matched_fields": [
+       "SÉPIA LESTE",
+       "SÉPIA_ECO"
+      ],
+      "grouping_reason": "SÉPIA_ECO (from 2022-05) is the surplus contract over SÉPIA. Same-wells test: SÉPIA LESTE: 5 shared wells 2021-08..2026-09; 100% of SÉPIA LESTE volume from shared wells."
+     },
+     {
+      "field_group": "ITAPU",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 153090.0,
+      "matched_fields": [
+       "ITAPU_ECO"
+      ],
+      "grouping_reason": "ITAPU_ECO (from 2022-12) is the surplus contract over ITAPU."
+     },
+     {
+      "field_group": "ATAPU",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 145847.0,
+      "matched_fields": [
+       "ANC_NORTE_ATAPU",
+       "ATAPU_ECO",
+       "OESTE DE ATAPU"
+      ],
+      "grouping_reason": "ATAPU_ECO (from 2022-05) is the surplus contract over ATAPU. Same-wells test: ANC_NORTE_ATAPU: 6 shared wells 2020-06..2026-09; 100% of ANC_NORTE_ATAPU volume from shared wells; OESTE DE ATAPU: 6 shared wells 2020-06..2026-09; 100% of OESTE DE ATAPU volume from shared wells."
+     },
+     {
+      "field_group": "BACALHAU",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 144179.0,
+      "matched_fields": [
+       "BACALHAU NORTE"
+      ],
+      "grouping_reason": "Same-wells test: BACALHAU: 3 shared wells 2025-10..2026-09; 96% of BACALHAU volume from shared wells."
+     },
+     {
+      "field_group": "BERBIGÃO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 131599.0,
+      "matched_fields": [
+       "NORTE DE BERBIGÃO",
+       "SUL DE BERBIGÃO"
+      ],
+      "grouping_reason": "Same-wells test: NORTE DE BERBIGÃO: 10 shared wells 2026-05..2026-09; 100% of NORTE DE BERBIGÃO volume from shared wells; SUL DE BERBIGÃO: 10 shared wells 2026-05..2026-09; 100% of SUL DE BERBIGÃO volume from shared wells; SURURU: handover SURURU -> BERBIGÃO (100% of wells)."
+     },
+     {
+      "field_group": "PEREGRINO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 102949.0,
+      "matched_fields": [
+       "PITANGOLA"
+      ],
+      "grouping_reason": "Same-wells test: PITANGOLA: 11 shared wells 2022-10..2026-09; 100% of PITANGOLA volume from shared wells."
+     },
+     {
+      "field_group": "MARLIM",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 87897.0,
+      "matched_fields": [
+       "ANC_BRAVA",
+       "ESPADIM"
+      ],
+      "grouping_reason": "Same-wells test: ANC_BRAVA: handover ANC_BRAVA -> MARLIM (100% of wells); ESPADIM: 2 shared wells 2023-12..2026-09; 100% of ESPADIM volume from shared wells."
+     },
+     {
+      "field_group": "SAPINHOÁ",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 80519.0,
+      "matched_fields": [
+       "NORDESTE DE SAPINHOÁ",
+       "NOROESTE DE SAPINHOA",
+       "NOROESTE DE SAPINHOÁ",
+       "SUDOESTE DE SAPINHOÁ"
+      ],
+      "grouping_reason": "Rename over time AND concurrent slice of one reservoir. Rename/spelling: NOROESTE DE SAPINHOA (until 2021-09) -> NOROESTE DE SAPINHOÁ (from 2021-10), 81% of wells continue. Slice: NOROESTE, NORDESTE and SUDOESTE DE SAPINHOÁ each take 100% of their volume from 16 wells shared with SAPINHOÁ (since 201"
+     },
+     {
+      "field_group": "MARLIM SUL",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 74645.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "LAPA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 69685.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "RONCADOR",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 61361.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "MARLIM LESTE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 54439.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "WAHOO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 37137.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "FRADE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 32040.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "TARTARUGA VERDE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 30859.0,
+      "matched_fields": [
+       "ANC_TARTARUGA VERDE",
+       "ANC_TARTARUGA_VERDE",
+       "TARTARUGA VERDE SUDOESTE"
+      ],
+      "grouping_reason": "Unitised non-contracted area; spelled with a space (2018-10..12) and an underscore (later). Normalisation does not turn \"_\" into \" \", so both spellings are listed. Same-wells test: TARTARUGA VERDE SUDOESTE: 5 shared wells 2018-12..2026-09; 100% of TARTARUGA VERDE SUDOESTE volume from shared wells."
+     },
+     {
+      "field_group": "ATLANTA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 29723.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ALBACORA LESTE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 25600.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ARGONAUTA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 24278.0,
+      "matched_fields": [
+       "ANC_ARGONAUTA_ME1"
+      ],
+      "grouping_reason": "Same-wells test: ANC_ARGONAUTA_ME1: 2 shared wells 2026-02..2026-09; 100% of ANC_ARGONAUTA_ME1 volume from shared wells."
+     },
+     {
+      "field_group": "BAÚNA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 19037.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ESPADARTE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 17294.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "PAPA-TERRA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 16324.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "CARATINGA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 11529.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "BARRACUDA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 11006.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "MARIMBÁ",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 9625.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "CARAPEBA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 7840.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "CARMÓPOLIS",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 7539.0,
+      "matched_fields": [
+       "CARMÓPOLIS NOROESTE"
+      ],
+      "grouping_reason": "Same-wells test: CARMÓPOLIS NOROESTE: handover CARMÓPOLIS NOROESTE -> CARMÓPOLIS (100% of wells)."
+     },
+     {
+      "field_group": "OSTRA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 7354.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "TUBARÃO MARTELO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 6067.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "CANTO DO AMARO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 5589.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "PA-1BRSA1083SES-SEAL-M-426",
+      "latest_month": "2020-03",
+      "latest_petroleum_bpd": 4860.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "VOADOR",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 4338.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "PILAR",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 4136.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "BALEIA ANÃ",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 3504.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "URUGUÁ",
+      "latest_month": "2024-12",
+      "latest_petroleum_bpd": 3369.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "FAZENDA ALEGRE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 3213.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "PARGO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 3075.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ESTREITO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2958.0,
+      "matched_fields": [
+       "PA-1BRSA452-1BRSA453-POT-T-661"
+      ],
+      "grouping_reason": "Same-wells test: PA-1BRSA452-1BRSA453-POT-T-661: handover PA-1BRSA452-1BRSA453-POT-T-661 -> ESTREITO (100% of wells)."
+     },
+     {
+      "field_group": "ENCHOVA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2664.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "BURACICA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2612.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ABALONE",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2577.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "SERRA",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2288.0,
+      "matched_fields": [
+       "ARATUM",
+       "MACAU"
+      ],
+      "grouping_reason": "Same-wells test: ARATUM: 56 shared wells 2017-04..2021-04; 80% of ARATUM volume from shared wells; MACAU: handover SERRA -> MACAU (100% of wells)."
+     },
+     {
+      "field_group": "SALINA CRISTAL",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2057.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "MEXILHÃO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2028.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ARAÇÁS",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 2022.0,
+      "matched_fields": [
+       "MANDACARU"
+      ],
+      "grouping_reason": "Same-wells test: MANDACARU: handover MANDACARU -> ARAÇÁS (100% of wells)."
+     },
+     {
+      "field_group": "LIVRAMENTO",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 1812.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     },
+     {
+      "field_group": "ALTO DO RODRIGUES",
+      "latest_month": "2026-09",
+      "latest_petroleum_bpd": 1728.0,
+      "matched_fields": [],
+      "grouping_reason": null
+     }
+    ],
+    "unit": "bbl/d (oil + condensate)"
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c1",
+   "name": "top_changes",
+   "args": {
+    "direction": "up",
+    "n": 30
+   },
+   "result_text": "{\n  \"latest_month\": \"2026-09\",\n  \"window_months\": 6,\n  \"method\": \"mean of last window vs mean of the previous window of the same length\",\n  \"groups\": [\n    {\n      \"field_group\": \"BÚZIOS\",\n      \"before_bpd\": 836755.0,\n      \"recent_bpd\": 1056771.0,\n      \"change_bpd\": 220016.0,\n      \"change_pct\": 26.3\n    },\n    {\n      \"field_group\": \"MERO\",\n      \"before_bpd\": 653417.0,\n      \"recent_bpd\": 750764.0,\n      \"change_bpd\": 97346.0,\n      \"change_pct\": 14.9\n    },\n    {\n      \"field_group\": \"BACALHAU\",\n      \"before_bpd\": 32119.0,\n      \"recent_bpd\": 99492.0,\n      \"change_bpd\": 67374.0,\n      \"change_pct\": 209.8\n    },\n    {\n      \"field_group\": \"LAPA\",\n      \"before_bpd\": 39856.0,\n      \"recent_bpd\": 73398.0,\n      \"change_bpd\": 33542.0,\n      \"change_pct\": 84.2\n    },\n    {\n      \"field_group\": \"WAHOO\",\n      \"before_bpd\": 7153.0,\n      \"recent_bpd\": 34809.0,\n      \"change_bpd\": 27656.0,\n      \"change_pct\": 386.6\n    },\n    {\n      \"field_group\": \"ATAPU\",\n      \"before_bpd\": 125131.0,\n      \"recent_bpd\": 147145.0,\n      \"change_bpd\": 22014.0,\n      \"change_pct\": 17.6\n    },\n    {\n      \"field_group\": \"SÉPIA\",\n      \"before_bpd\": 142884.0,\n      \"recent_bpd\": 155872.0,\n      \"change_bpd\": 12988.0,\n      \"change_pct\": 9.1\n    },\n    {\n      \"field_group\": \"JUBARTE\",\n      \"before_bpd\": 176232.0,\n      \"recent_bpd\": 185751.0,\n      \"change_bpd\": 9519.0,\n      \"change_pct\": 5.4\n    },\n    {\n      \"field_group\": \"ARGONAUTA\",\n      \"before_bpd\": 15215.0,\n      \"recent_bpd\": 23129.0,\n      \"change_bpd\": 7914.0,\n      \"change_pct\": 52.0\n    },\n    {\n      \"field_group\": \"RONCADOR\",\n      \"before_bpd\": 60526.0,\n      \"recent_bpd\": 68187.0,\n      \"change_bpd\": 7660.0,\n      \"change_pct\": 12.7\n    },\n    {\n      \"field_group\": \"BERBIGÃO\",\n      \"before_bpd\": 125393.0,\n      \"recent_bpd\": 131325.0,\n      \"change_bpd\": 5932.0,\n      \"change_pct\": 4.7\n    },\n    {\n      \"field_group\": \"PEREGRINO\",\n      \"before_bpd\": 92515.0,\n      \"recent_bpd\": 96928.0,\n      \"change_bpd\": 4412.0,\n      \"change_pct\": 4.8\n    },\n    {\n      \"field_group\": \"MARLIM\",\n      \"before_bpd\": 74247.0,\n      \"recent_bpd\": 78324.0,\n      \"change_bpd\": 4077.0,\n      \"change_pct\": 5.5\n    },\n    {\n      \"field_group\": \"OSTRA\",\n      \"before_bpd\": 4102.0,\n      \"recent_bpd\": 7081.0,\n      \"change_bpd\": 2979.0,\n      \"change_pct\": 72.6\n    },\n    {\n      \"field_group\": \"CARATINGA\",\n      \"before_bpd\": 10513.0,\n      \"recent_bpd\": 12594.0,\n      \"change_bpd\": 2080.0,\n      \"change_pct\": 19.8\n    },\n    {\n      \"field_group\": \"BONITO\",\n      \"before_bpd\": 3517.0,\n      \"recent_bpd\": 5229.0,\n      \"change_bpd\": 1712.0,\n      \"change_pct\": 48.7\n    },\n    {\n      \"field_group\": \"GOLFINHO\",\n      \"before_bpd\": 4810.0,\n      \"recent_bpd\": 6519.0,\n      \"change_bpd\": 1709.0,\n      \"change_pct\": 35.5\n    },\n    {\n      \"field_group\": \"MARIMBÁ\",\n      \"before_bpd\": 8475.0,\n      \"recent_bpd\": 10063.0,\n      \"change_bpd\": 1588.0,\n      \"change_pct\": 18.7\n    },\n    {\n      \"field_group\": \"PILAR\",\n      \"before_bpd\": 2280.0,\n      \"recent_bpd\": 3791.0,\n      \"change_bpd\": 1510.0,\n      \"change_pct\": 66.2\n    },\n    {\n      \"field_group\": \"ATLANTA\",\n      \"before_bpd\": 29138.0,\n      \"recent_bpd\": 30563.0,\n      \"change_bpd\": 1425.0,\n      \"change_pct\": 4.9\n    },\n    {\n      \"field_group\": \"CARAPEBA\",\n      \"before_bpd\": 5906.0,\n      \"recent_bpd\": 7210.0,\n      \"change_bpd\": 1304.0,\n      \"change_pct\": 22.1\n    },\n    {\n      \"field_group\": \"ALBACORA\",\n      \"before_bpd\": 1674.0,\n      \"recent_bpd\": 2658.0,\n      \"change_bpd\": 984.0,\n      \"change_pct\": 58.8\n    },\n    {\n      \"field_group\": \"VERMELHO\",\n      \"before_bpd\": 6476.0,\n      \"recent_bpd\": 7417.0,\n      \"change_bpd\": 941.0,\n      \"change_pct\": 14.5\n    },\n    {\n      \"field_group\": \"ABALONE\",\n      \"before_bpd\": 1003.0,\n      \"recent_bpd\": 1879.0,\n      \"change_bpd\": 876.0,\n      \"change_pct\": 87.4\n    },\n    {\n      \"field_group\": \"ENCHOVA\",\n      \"before_bpd\": 2001.0,\n      \"recent_bpd\": 2778.0,\n      \"change_bpd\": 777.0,\n      \"change_pct\": 38.8\n    },\n    {\n      \"field_group\": \"ENCHOVA OESTE\",\n      \"before_bpd\": 1046.0,\n      \"recent_bpd\": 1358.0,\n      \"change_bpd\": 312.0,\n      \"change_pct\": 29.8\n    },\n    {\n      \"field_group\": \"PAPA-TERRA\",\n      \"before_bpd\": 17369.0,\n      \"recent_bpd\": 17658.0,\n      \"change_bpd\": 290.0,\n      \"change_pct\": 1.7\n    },\n    {\n      \"field_group\": \"LIVRAMENTO\",\n      \"before_bpd\": 1438.0,\n      \"recent_bpd\": 1711.0,\n      \"change_bpd\": 273.0,\n      \"change_pct\": 19.0\n    },\n    {\n      \"field_group\": \"BURACICA\",\n      \"before_bpd\": 2424.0,\n      \"recent_bpd\": 2666.0,\n      \"change_bpd\": 242.0,\n      \"change_pct\": 10.0\n    },\n    {\n      \"field_group\": \"PARGO\",\n      \"before_bpd\": 2633.0,\n      \"recent_bpd\": 2761.0,\n      \"change_bpd\": 129.0,\n      \"change_pct\": 4.9\n    }\n  ]\n}",
+   "structured": {
+    "latest_month": "2026-09",
+    "window_months": 6,
+    "method": "mean of last window vs mean of the previous window of the same length",
+    "groups": [
+     {
+      "field_group": "BÚZIOS",
+      "before_bpd": 836755.0,
+      "recent_bpd": 1056771.0,
+      "change_bpd": 220016.0,
+      "change_pct": 26.3
+     },
+     {
+      "field_group": "MERO",
+      "before_bpd": 653417.0,
+      "recent_bpd": 750764.0,
+      "change_bpd": 97346.0,
+      "change_pct": 14.9
+     },
+     {
+      "field_group": "BACALHAU",
+      "before_bpd": 32119.0,
+      "recent_bpd": 99492.0,
+      "change_bpd": 67374.0,
+      "change_pct": 209.8
+     },
+     {
+      "field_group": "LAPA",
+      "before_bpd": 39856.0,
+      "recent_bpd": 73398.0,
+      "change_bpd": 33542.0,
+      "change_pct": 84.2
+     },
+     {
+      "field_group": "WAHOO",
+      "before_bpd": 7153.0,
+      "recent_bpd": 34809.0,
+      "change_bpd": 27656.0,
+      "change_pct": 386.6
+     },
+     {
+      "field_group": "ATAPU",
+      "before_bpd": 125131.0,
+      "recent_bpd": 147145.0,
+      "change_bpd": 22014.0,
+      "change_pct": 17.6
+     },
+     {
+      "field_group": "SÉPIA",
+      "before_bpd": 142884.0,
+      "recent_bpd": 155872.0,
+      "change_bpd": 12988.0,
+      "change_pct": 9.1
+     },
+     {
+      "field_group": "JUBARTE",
+      "before_bpd": 176232.0,
+      "recent_bpd": 185751.0,
+      "change_bpd": 9519.0,
+      "change_pct": 5.4
+     },
+     {
+      "field_group": "ARGONAUTA",
+      "before_bpd": 15215.0,
+      "recent_bpd": 23129.0,
+      "change_bpd": 7914.0,
+      "change_pct": 52.0
+     },
+     {
+      "field_group": "RONCADOR",
+      "before_bpd": 60526.0,
+      "recent_bpd": 68187.0,
+      "change_bpd": 7660.0,
+      "change_pct": 12.7
+     },
+     {
+      "field_group": "BERBIGÃO",
+      "before_bpd": 125393.0,
+      "recent_bpd": 131325.0,
+      "change_bpd": 5932.0,
+      "change_pct": 4.7
+     },
+     {
+      "field_group": "PEREGRINO",
+      "before_bpd": 92515.0,
+      "recent_bpd": 96928.0,
+      "change_bpd": 4412.0,
+      "change_pct": 4.8
+     },
+     {
+      "field_group": "MARLIM",
+      "before_bpd": 74247.0,
+      "recent_bpd": 78324.0,
+      "change_bpd": 4077.0,
+      "change_pct": 5.5
+     },
+     {
+      "field_group": "OSTRA",
+      "before_bpd": 4102.0,
+      "recent_bpd": 7081.0,
+      "change_bpd": 2979.0,
+      "change_pct": 72.6
+     },
+     {
+      "field_group": "CARATINGA",
+      "before_bpd": 10513.0,
+      "recent_bpd": 12594.0,
+      "change_bpd": 2080.0,
+      "change_pct": 19.8
+     },
+     {
+      "field_group": "BONITO",
+      "before_bpd": 3517.0,
+      "recent_bpd": 5229.0,
+      "change_bpd": 1712.0,
+      "change_pct": 48.7
+     },
+     {
+      "field_group": "GOLFINHO",
+      "before_bpd": 4810.0,
+      "recent_bpd": 6519.0,
+      "change_bpd": 1709.0,
+      "change_pct": 35.5
+     },
+     {
+      "field_group": "MARIMBÁ",
+      "before_bpd": 8475.0,
+      "recent_bpd": 10063.0,
+      "change_bpd": 1588.0,
+      "change_pct": 18.7
+     },
+     {
+      "field_group": "PILAR",
+      "before_bpd": 2280.0,
+      "recent_bpd": 3791.0,
+      "change_bpd": 1510.0,
+      "change_pct": 66.2
+     },
+     {
+      "field_group": "ATLANTA",
+      "before_bpd": 29138.0,
+      "recent_bpd": 30563.0,
+      "change_bpd": 1425.0,
+      "change_pct": 4.9
+     },
+     {
+      "field_group": "CARAPEBA",
+      "before_bpd": 5906.0,
+      "recent_bpd": 7210.0,
+      "change_bpd": 1304.0,
+      "change_pct": 22.1
+     },
+     {
+      "field_group": "ALBACORA",
+      "before_bpd": 1674.0,
+      "recent_bpd": 2658.0,
+      "change_bpd": 984.0,
+      "change_pct": 58.8
+     },
+     {
+      "field_group": "VERMELHO",
+      "before_bpd": 6476.0,
+      "recent_bpd": 7417.0,
+      "change_bpd": 941.0,
+      "change_pct": 14.5
+     },
+     {
+      "field_group": "ABALONE",
+      "before_bpd": 1003.0,
+      "recent_bpd": 1879.0,
+      "change_bpd": 876.0,
+      "change_pct": 87.4
+     },
+     {
+      "field_group": "ENCHOVA",
+      "before_bpd": 2001.0,
+      "recent_bpd": 2778.0,
+      "change_bpd": 777.0,
+      "change_pct": 38.8
+     },
+     {
+      "field_group": "ENCHOVA OESTE",
+      "before_bpd": 1046.0,
+      "recent_bpd": 1358.0,
+      "change_bpd": 312.0,
+      "change_pct": 29.8
+     },
+     {
+      "field_group": "PAPA-TERRA",
+      "before_bpd": 17369.0,
+      "recent_bpd": 17658.0,
+      "change_bpd": 290.0,
+      "change_pct": 1.7
+     },
+     {
+      "field_group": "LIVRAMENTO",
+      "before_bpd": 1438.0,
+      "recent_bpd": 1711.0,
+      "change_bpd": 273.0,
+      "change_pct": 19.0
+     },
+     {
+      "field_group": "BURACICA",
+      "before_bpd": 2424.0,
+      "recent_bpd": 2666.0,
+      "change_bpd": 242.0,
+      "change_pct": 10.0
+     },
+     {
+      "field_group": "PARGO",
+      "before_bpd": 2633.0,
+      "recent_bpd": 2761.0,
+      "change_bpd": 129.0,
+      "change_pct": 4.9
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c2",
+   "name": "top_changes",
+   "args": {
+    "direction": "down",
+    "n": 30
+   },
+   "result_text": "{\n  \"latest_month\": \"2026-09\",\n  \"window_months\": 6,\n  \"method\": \"mean of last window vs mean of the previous window of the same length\",\n  \"groups\": [\n    {\n      \"field_group\": \"TUPI\",\n      \"before_bpd\": 874045.0,\n      \"recent_bpd\": 843997.0,\n      \"change_bpd\": -30048.0,\n      \"change_pct\": -3.4\n    },\n    {\n      \"field_group\": \"SAPINHOÁ\",\n      \"before_bpd\": 112875.0,\n      \"recent_bpd\": 105275.0,\n      \"change_bpd\": -7601.0,\n      \"change_pct\": -6.7\n    },\n    {\n      \"field_group\": \"ITAPU\",\n      \"before_bpd\": 152510.0,\n      \"recent_bpd\": 146321.0,\n      \"change_bpd\": -6189.0,\n      \"change_pct\": -4.1\n    },\n    {\n      \"field_group\": \"MARLIM SUL\",\n      \"before_bpd\": 69170.0,\n      \"recent_bpd\": 65270.0,\n      \"change_bpd\": -3900.0,\n      \"change_pct\": -5.6\n    },\n    {\n      \"field_group\": \"BAÚNA\",\n      \"before_bpd\": 18034.0,\n      \"recent_bpd\": 14578.0,\n      \"change_bpd\": -3456.0,\n      \"change_pct\": -19.2\n    },\n    {\n      \"field_group\": \"ALBACORA LESTE\",\n      \"before_bpd\": 28496.0,\n      \"recent_bpd\": 25592.0,\n      \"change_bpd\": -2904.0,\n      \"change_pct\": -10.2\n    },\n    {\n      \"field_group\": \"TARTARUGA VERDE\",\n      \"before_bpd\": 34826.0,\n      \"recent_bpd\": 32093.0,\n      \"change_bpd\": -2732.0,\n      \"change_pct\": -7.8\n    },\n    {\n      \"field_group\": \"FRADE\",\n      \"before_bpd\": 30209.0,\n      \"recent_bpd\": 27485.0,\n      \"change_bpd\": -2724.0,\n      \"change_pct\": -9.0\n    },\n    {\n      \"field_group\": \"ESPADARTE\",\n      \"before_bpd\": 18222.0,\n      \"recent_bpd\": 16452.0,\n      \"change_bpd\": -1769.0,\n      \"change_pct\": -9.7\n    },\n    {\n      \"field_group\": \"TUBARÃO MARTELO\",\n      \"before_bpd\": 8472.0,\n      \"recent_bpd\": 7041.0,\n      \"change_bpd\": -1431.0,\n      \"change_pct\": -16.9\n    },\n    {\n      \"field_group\": \"BARRACUDA\",\n      \"before_bpd\": 28937.0,\n      \"recent_bpd\": 27595.0,\n      \"change_bpd\": -1342.0,\n      \"change_pct\": -4.6\n    },\n    {\n      \"field_group\": \"BALEIA ANÃ\",\n      \"before_bpd\": 4351.0,\n      \"recent_bpd\": 3352.0,\n      \"change_bpd\": -998.0,\n      \"change_pct\": -22.9\n    },\n    {\n      \"field_group\": \"ESTREITO\",\n      \"before_bpd\": 4062.0,\n      \"recent_bpd\": 3159.0,\n      \"change_bpd\": -903.0,\n      \"change_pct\": -22.2\n    },\n    {\n      \"field_group\": \"ALTO DO RODRIGUES\",\n      \"before_bpd\": 2473.0,\n      \"recent_bpd\": 1752.0,\n      \"change_bpd\": -721.0,\n      \"change_pct\": -29.1\n    },\n    {\n      \"field_group\": \"MARLIM LESTE\",\n      \"before_bpd\": 53940.0,\n      \"recent_bpd\": 53229.0,\n      \"change_bpd\": -711.0,\n      \"change_pct\": -1.3\n    },\n    {\n      \"field_group\": \"PAMPO\",\n      \"before_bpd\": 6477.0,\n      \"recent_bpd\": 5890.0,\n      \"change_bpd\": -587.0,\n      \"change_pct\": -9.1\n    },\n    {\n      \"field_group\": \"CARMÓPOLIS\",\n      \"before_bpd\": 8337.0,\n      \"recent_bpd\": 7874.0,\n      \"change_bpd\": -463.0,\n      \"change_pct\": -5.6\n    },\n    {\n      \"field_group\": \"SABIÁ BICO-DE-OSSO\",\n      \"before_bpd\": 1093.0,\n      \"recent_bpd\": 898.0,\n      \"change_bpd\": -195.0,\n      \"change_pct\": -17.9\n    },\n    {\n      \"field_group\": \"VOADOR\",\n      \"before_bpd\": 4221.0,\n      \"recent_bpd\": 4075.0,\n      \"change_bpd\": -146.0,\n      \"change_pct\": -3.5\n    },\n    {\n      \"field_group\": \"ÁGUA GRANDE\",\n      \"before_bpd\": 1143.0,\n      \"recent_bpd\": 999.0,\n      \"change_bpd\": -144.0,\n      \"change_pct\": -12.6\n    },\n    {\n      \"field_group\": \"FAZENDA ALEGRE\",\n      \"before_bpd\": 3454.0,\n      \"recent_bpd\": 3324.0,\n      \"change_bpd\": -130.0,\n      \"change_pct\": -3.8\n    },\n    {\n      \"field_group\": \"MIRANGA\",\n      \"before_bpd\": 1676.0,\n      \"recent_bpd\": 1551.0,\n      \"change_bpd\": -125.0,\n      \"change_pct\": -7.5\n    },\n    {\n      \"field_group\": \"SERRA\",\n      \"before_bpd\": 2442.0,\n      \"recent_bpd\": 2345.0,\n      \"change_bpd\": -97.0,\n      \"change_pct\": -4.0\n    },\n    {\n      \"field_group\": \"POLVO\",\n      \"before_bpd\": 6845.0,\n      \"recent_bpd\": 6752.0,\n      \"change_bpd\": -93.0,\n      \"change_pct\": -1.4\n    },\n    {\n      \"field_group\": \"TAQUIPE\",\n      \"before_bpd\": 1501.0,\n      \"recent_bpd\": 1423.0,\n      \"change_bpd\": -78.0,\n      \"change_pct\": -5.2\n    },\n    {\n      \"field_group\": \"LORENA\",\n      \"before_bpd\": 1019.0,\n      \"recent_bpd\": 956.0,\n      \"change_bpd\": -63.0,\n      \"change_pct\": -6.2\n    },\n    {\n      \"field_group\": \"SALINA CRISTAL\",\n      \"before_bpd\": 1909.0,\n      \"recent_bpd\": 1854.0,\n      \"change_bpd\": -55.0,\n      \"change_pct\": -2.9\n    },\n    {\n      \"field_group\": \"MEXILHÃO\",\n      \"before_bpd\": 1726.0,\n      \"recent_bpd\": 1692.0,\n      \"change_bpd\": -34.0,\n      \"change_pct\": -2.0\n    },\n    {\n      \"field_group\": \"RIACHUELO\",\n      \"before_bpd\": 1403.0,\n      \"recent_bpd\": 1379.0,\n      \"change_bpd\": -25.0,\n      \"change_pct\": -1.7\n    },\n    {\n      \"field_group\": \"ARAÇÁS\",\n      \"before_bpd\": 2037.0,\n      \"recent_bpd\": 2011.0,\n      \"change_bpd\": -25.0,\n      \"change_pct\": -1.2\n    }\n  ]\n}",
+   "structured": {
+    "latest_month": "2026-09",
+    "window_months": 6,
+    "method": "mean of last window vs mean of the previous window of the same length",
+    "groups": [
+     {
+      "field_group": "TUPI",
+      "before_bpd": 874045.0,
+      "recent_bpd": 843997.0,
+      "change_bpd": -30048.0,
+      "change_pct": -3.4
+     },
+     {
+      "field_group": "SAPINHOÁ",
+      "before_bpd": 112875.0,
+      "recent_bpd": 105275.0,
+      "change_bpd": -7601.0,
+      "change_pct": -6.7
+     },
+     {
+      "field_group": "ITAPU",
+      "before_bpd": 152510.0,
+      "recent_bpd": 146321.0,
+      "change_bpd": -6189.0,
+      "change_pct": -4.1
+     },
+     {
+      "field_group": "MARLIM SUL",
+      "before_bpd": 69170.0,
+      "recent_bpd": 65270.0,
+      "change_bpd": -3900.0,
+      "change_pct": -5.6
+     },
+     {
+      "field_group": "BAÚNA",
+      "before_bpd": 18034.0,
+      "recent_bpd": 14578.0,
+      "change_bpd": -3456.0,
+      "change_pct": -19.2
+     },
+     {
+      "field_group": "ALBACORA LESTE",
+      "before_bpd": 28496.0,
+      "recent_bpd": 25592.0,
+      "change_bpd": -2904.0,
+      "change_pct": -10.2
+     },
+     {
+      "field_group": "TARTARUGA VERDE",
+      "before_bpd": 34826.0,
+      "recent_bpd": 32093.0,
+      "change_bpd": -2732.0,
+      "change_pct": -7.8
+     },
+     {
+      "field_group": "FRADE",
+      "before_bpd": 30209.0,
+      "recent_bpd": 27485.0,
+      "change_bpd": -2724.0,
+      "change_pct": -9.0
+     },
+     {
+      "field_group": "ESPADARTE",
+      "before_bpd": 18222.0,
+      "recent_bpd": 16452.0,
+      "change_bpd": -1769.0,
+      "change_pct": -9.7
+     },
+     {
+      "field_group": "TUBARÃO MARTELO",
+      "before_bpd": 8472.0,
+      "recent_bpd": 7041.0,
+      "change_bpd": -1431.0,
+      "change_pct": -16.9
+     },
+     {
+      "field_group": "BARRACUDA",
+      "before_bpd": 28937.0,
+      "recent_bpd": 27595.0,
+      "change_bpd": -1342.0,
+      "change_pct": -4.6
+     },
+     {
+      "field_group": "BALEIA ANÃ",
+      "before_bpd": 4351.0,
+      "recent_bpd": 3352.0,
+      "change_bpd": -998.0,
+      "change_pct": -22.9
+     },
+     {
+      "field_group": "ESTREITO",
+      "before_bpd": 4062.0,
+      "recent_bpd": 3159.0,
+      "change_bpd": -903.0,
+      "change_pct": -22.2
+     },
+     {
+      "field_group": "ALTO DO RODRIGUES",
+      "before_bpd": 2473.0,
+      "recent_bpd": 1752.0,
+      "change_bpd": -721.0,
+      "change_pct": -29.1
+     },
+     {
+      "field_group": "MARLIM LESTE",
+      "before_bpd": 53940.0,
+      "recent_bpd": 53229.0,
+      "change_bpd": -711.0,
+      "change_pct": -1.3
+     },
+     {
+      "field_group": "PAMPO",
+      "before_bpd": 6477.0,
+      "recent_bpd": 5890.0,
+      "change_bpd": -587.0,
+      "change_pct": -9.1
+     },
+     {
+      "field_group": "CARMÓPOLIS",
+      "before_bpd": 8337.0,
+      "recent_bpd": 7874.0,
+      "change_bpd": -463.0,
+      "change_pct": -5.6
+     },
+     {
+      "field_group": "SABIÁ BICO-DE-OSSO",
+      "before_bpd": 1093.0,
+      "recent_bpd": 898.0,
+      "change_bpd": -195.0,
+      "change_pct": -17.9
+     },
+     {
+      "field_group": "VOADOR",
+      "before_bpd": 4221.0,
+      "recent_bpd": 4075.0,
+      "change_bpd": -146.0,
+      "change_pct": -3.5
+     },
+     {
+      "field_group": "ÁGUA GRANDE",
+      "before_bpd": 1143.0,
+      "recent_bpd": 999.0,
+      "change_bpd": -144.0,
+      "change_pct": -12.6
+     },
+     {
+      "field_group": "FAZENDA ALEGRE",
+      "before_bpd": 3454.0,
+      "recent_bpd": 3324.0,
+      "change_bpd": -130.0,
+      "change_pct": -3.8
+     },
+     {
+      "field_group": "MIRANGA",
+      "before_bpd": 1676.0,
+      "recent_bpd": 1551.0,
+      "change_bpd": -125.0,
+      "change_pct": -7.5
+     },
+     {
+      "field_group": "SERRA",
+      "before_bpd": 2442.0,
+      "recent_bpd": 2345.0,
+      "change_bpd": -97.0,
+      "change_pct": -4.0
+     },
+     {
+      "field_group": "POLVO",
+      "before_bpd": 6845.0,
+      "recent_bpd": 6752.0,
+      "change_bpd": -93.0,
+      "change_pct": -1.4
+     },
+     {
+      "field_group": "TAQUIPE",
+      "before_bpd": 1501.0,
+      "recent_bpd": 1423.0,
+      "change_bpd": -78.0,
+      "change_pct": -5.2
+     },
+     {
+      "field_group": "LORENA",
+      "before_bpd": 1019.0,
+      "recent_bpd": 956.0,
+      "change_bpd": -63.0,
+      "change_pct": -6.2
+     },
+     {
+      "field_group": "SALINA CRISTAL",
+      "before_bpd": 1909.0,
+      "recent_bpd": 1854.0,
+      "change_bpd": -55.0,
+      "change_pct": -2.9
+     },
+     {
+      "field_group": "MEXILHÃO",
+      "before_bpd": 1726.0,
+      "recent_bpd": 1692.0,
+      "change_bpd": -34.0,
+      "change_pct": -2.0
+     },
+     {
+      "field_group": "RIACHUELO",
+      "before_bpd": 1403.0,
+      "recent_bpd": 1379.0,
+      "change_bpd": -25.0,
+      "change_pct": -1.7
+     },
+     {
+      "field_group": "ARAÇÁS",
+      "before_bpd": 2037.0,
+      "recent_bpd": 2011.0,
+      "change_bpd": -25.0,
+      "change_pct": -1.2
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c3",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "BÚZIOS",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"BÚZIOS\",\n  \"unit\": \"bbl/d\",\n  \"months\": [\n    {\n      \"month\": \"2025-01\",\n      \"petroleum_bpd\": 656653.0,\n      \"active_wells\": 24\n    },\n    {\n      \"month\": \"2025-02\",\n      \"petroleum_bpd\": 705346.0,\n      \"active_wells\": 25\n    },\n    {\n      \"month\": \"2025-03\",\n      \"petroleum_bpd\": 719657.0,\n      \"active_wells\": 24\n    },\n    {\n      \"month\": \"2025-04\",\n      \"petroleum_bpd\": 725229.0,\n      \"active_wells\": 25\n    },\n    {\n      \"month\": \"2025-05\",\n      \"petroleum_bpd\": 697286.0,\n      \"active_wells\": 26\n    },\n    {\n      \"month\": \"2025-06\",\n      \"petroleum_bpd\": 749454.0,\n      \"active_wells\": 26\n    },\n    {\n      \"month\": \"2025-07\",\n      \"petroleum_bpd\": 779224.0,\n      \"active_wells\": 29\n    },\n    {\n      \"month\": \"2025-08\",\n      \"petroleum_bpd\": 827189.0,\n      \"active_wells\": 30\n    },\n    {\n      \"month\": \"2025-09\",\n      \"petroleum_bpd\": 777087.0,\n      \"active_wells\": 26\n    },\n    {\n      \"month\": \"2025-10\",\n      \"petroleum_bpd\": 890487.0,\n      \"active_wells\": 31\n    },\n    {\n      \"month\": \"2025-11\",\n      \"petroleum_bpd\": 749102.0,\n      \"active_wells\": 30\n    },\n    {\n      \"month\": \"2025-12\",\n      \"petroleum_bpd\": 816724.0,\n      \"active_wells\": 29\n    }\n  ]\n}",
+   "structured": {
+    "field_group": "BÚZIOS",
+    "unit": "bbl/d",
+    "months": [
+     {
+      "month": "2025-01",
+      "petroleum_bpd": 656653.0,
+      "active_wells": 24
+     },
+     {
+      "month": "2025-02",
+      "petroleum_bpd": 705346.0,
+      "active_wells": 25
+     },
+     {
+      "month": "2025-03",
+      "petroleum_bpd": 719657.0,
+      "active_wells": 24
+     },
+     {
+      "month": "2025-04",
+      "petroleum_bpd": 725229.0,
+      "active_wells": 25
+     },
+     {
+      "month": "2025-05",
+      "petroleum_bpd": 697286.0,
+      "active_wells": 26
+     },
+     {
+      "month": "2025-06",
+      "petroleum_bpd": 749454.0,
+      "active_wells": 26
+     },
+     {
+      "month": "2025-07",
+      "petroleum_bpd": 779224.0,
+      "active_wells": 29
+     },
+     {
+      "month": "2025-08",
+      "petroleum_bpd": 827189.0,
+      "active_wells": 30
+     },
+     {
+      "month": "2025-09",
+      "petroleum_bpd": 777087.0,
+      "active_wells": 26
+     },
+     {
+      "month": "2025-10",
+      "petroleum_bpd": 890487.0,
+      "active_wells": 31
+     },
+     {
+      "month": "2025-11",
+      "petroleum_bpd": 749102.0,
+      "active_wells": 30
+     },
+     {
+      "month": "2025-12",
+      "petroleum_bpd": 816724.0,
+      "active_wells": 29
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c4",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "TUPI",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"TUPI\",\n  \"unit\": \"bbl/d\",\n  \"months\": [\n    {\n      \"month\": \"2025-01\",\n      \"petroleum_bpd\": 838889.0,\n      \"active_wells\": 62\n    },\n    {\n      \"month\": \"2025-02\",\n      \"petroleum_bpd\": 808978.0,\n      \"active_wells\": 61\n    },\n    {\n      \"month\": \"2025-03\",\n      \"petroleum_bpd\": 829776.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-04\",\n      \"petroleum_bpd\": 832640.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-05\",\n      \"petroleum_bpd\": 875999.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-06\",\n      \"petroleum_bpd\": 845641.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-07\",\n      \"petroleum_bpd\": 850677.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-08\",\n      \"petroleum_bpd\": 830075.0,\n      \"active_wells\": 58\n    },\n    {\n      \"month\": \"2025-09\",\n      \"petroleum_bpd\": 871759.0,\n      \"active_wells\": 60\n    },\n    {\n      \"month\": \"2025-10\",\n      \"petroleum_bpd\": 834122.0,\n      \"active_wells\": 61\n    },\n    {\n      \"month\": \"2025-11\",\n      \"petroleum_bpd\": 727833.0,\n      \"active_wells\": 63\n    },\n    {\n      \"month\": \"2025-12\",\n      \"petroleum_bpd\": 903995.0,\n      \"active_wells\": 64\n    }\n  ]\n}",
+   "structured": {
+    "field_group": "TUPI",
+    "unit": "bbl/d",
+    "months": [
+     {
+      "month": "2025-01",
+      "petroleum_bpd": 838889.0,
+      "active_wells": 62
+     },
+     {
+      "month": "2025-02",
+      "petroleum_bpd": 808978.0,
+      "active_wells": 61
+     },
+     {
+      "month": "2025-03",
+      "petroleum_bpd": 829776.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-04",
+      "petroleum_bpd": 832640.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-05",
+      "petroleum_bpd": 875999.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-06",
+      "petroleum_bpd": 845641.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-07",
+      "petroleum_bpd": 850677.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-08",
+      "petroleum_bpd": 830075.0,
+      "active_wells": 58
+     },
+     {
+      "month": "2025-09",
+      "petroleum_bpd": 871759.0,
+      "active_wells": 60
+     },
+     {
+      "month": "2025-10",
+      "petroleum_bpd": 834122.0,
+      "active_wells": 61
+     },
+     {
+      "month": "2025-11",
+      "petroleum_bpd": 727833.0,
+      "active_wells": 63
+     },
+     {
+      "month": "2025-12",
+      "petroleum_bpd": 903995.0,
+      "active_wells": 64
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  },
+  {
+   "call_id": "c5",
+   "name": "field_group_production",
+   "args": {
+    "field_group": "MERO",
+    "start": "2025-01",
+    "end": "2025-12"
+   },
+   "result_text": "{\n  \"field_group\": \"MERO\",\n  \"unit\": \"bbl/d\",\n  \"months\": [\n    {\n      \"month\": \"2025-01\",\n      \"petroleum_bpd\": 439876.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-02\",\n      \"petroleum_bpd\": 444766.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-03\",\n      \"petroleum_bpd\": 470897.0,\n      \"active_wells\": 14\n    },\n    {\n      \"month\": \"2025-04\",\n      \"petroleum_bpd\": 472363.0,\n      \"active_wells\": 15\n    },\n    {\n      \"month\": \"2025-05\",\n      \"petroleum_bpd\": 517991.0,\n      \"active_wells\": 17\n    },\n    {\n      \"month\": \"2025-06\",\n      \"petroleum_bpd\": 543961.0,\n      \"active_wells\": 19\n    },\n    {\n      \"month\": \"2025-07\",\n      \"petroleum_bpd\": 607115.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-08\",\n      \"petroleum_bpd\": 544934.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-09\",\n      \"petroleum_bpd\": 629162.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-10\",\n      \"petroleum_bpd\": 652363.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-11\",\n      \"petroleum_bpd\": 643146.0,\n      \"active_wells\": 18\n    },\n    {\n      \"month\": \"2025-12\",\n      \"petroleum_bpd\": 635137.0,\n      \"active_wells\": 20\n    }\n  ]\n}",
+   "structured": {
+    "field_group": "MERO",
+    "unit": "bbl/d",
+    "months": [
+     {
+      "month": "2025-01",
+      "petroleum_bpd": 439876.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-02",
+      "petroleum_bpd": 444766.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-03",
+      "petroleum_bpd": 470897.0,
+      "active_wells": 14
+     },
+     {
+      "month": "2025-04",
+      "petroleum_bpd": 472363.0,
+      "active_wells": 15
+     },
+     {
+      "month": "2025-05",
+      "petroleum_bpd": 517991.0,
+      "active_wells": 17
+     },
+     {
+      "month": "2025-06",
+      "petroleum_bpd": 543961.0,
+      "active_wells": 19
+     },
+     {
+      "month": "2025-07",
+      "petroleum_bpd": 607115.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-08",
+      "petroleum_bpd": 544934.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-09",
+      "petroleum_bpd": 629162.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-10",
+      "petroleum_bpd": 652363.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-11",
+      "petroleum_bpd": 643146.0,
+      "active_wells": 18
+     },
+     {
+      "month": "2025-12",
+      "petroleum_bpd": 635137.0,
+      "active_wells": 20
+     }
+    ]
+   },
+   "status": "ok",
+   "seconds": 0.0
+  }
+ ]
+}

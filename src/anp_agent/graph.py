@@ -25,7 +25,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.graph.message import add_messages
 from langgraph.runtime import Runtime
 
-from anp_agent import calculator, footer, prompts
+from anp_agent import calculator, emergency, footer, prompts
 from anp_agent.budget import (
     CALCULATOR,
     MESSAGE_OVERHEAD,
@@ -173,7 +173,8 @@ async def agent(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
                      prompt=prompt, tools_tokens=0, final_mode=state["final_mode"])
     token_limited = state["token_limited"] or not room_for_tokens(ctx, state, prompt)
     if mode is Mode.NONE:
-        return {"no_llm": True, "token_limited": token_limited, "draft": no_llm_answer(state)}
+        draft = emergency.render(state["tool_records"], state["not_executed"], token_limited, lang)
+        return {"no_llm": True, "token_limited": token_limited, "draft": draft}
     extra: list[AnyMessage] = []
     if mode is Mode.FINAL and not any(e["mode"] == "final" for e in state["llm_log"]):
         refused = ", ".join(footer.describe_call(c, lang) for c in state["not_executed"])
@@ -283,33 +284,23 @@ def finalize(state: AgentState, runtime: Runtime[AgentContext]) -> dict:
     records = state["tool_records"]
     draft = state.get("draft", "")
     report = check(draft, provenance(ctx, state["question"], records))
-    budget = footer.budget_notice(state["not_executed"], state["token_limited"], lang)
+    # the emergency answer lists what was left out itself: no R4 notice on top of it
+    not_executed = [] if state["no_llm"] else state["not_executed"]
+    token_limited = state["token_limited"] and not state["no_llm"]
+    budget = footer.budget_notice(not_executed, token_limited, lang)
     recent = (footer.recent_notice(ctx.toolbox.latest_month, lang)
               if ctx.toolbox.latest_month
               and footer.uses_recent_months(report, ctx.toolbox.latest_month) else None)
     answer = footer.finalize(draft, language=lang, calls=as_calls(records), report=report,
                              removed=state["removed"], latest_month=ctx.toolbox.latest_month,
-                             not_executed=state["not_executed"],
-                             token_limited=state["token_limited"])
-    if budget:
+                             not_executed=not_executed, token_limited=token_limited)
+    if budget or state["no_llm"]:
         status = "budget_reached"
     elif state["removed"]:
         status = "redacted"
     else:
         status = "answered"
     return {"answer": answer, "status": status, "notices": [n for n in (budget, recent) if n]}
-
-
-def no_llm_answer(state: AgentState) -> str:
-    """No LLM call fits: the tool results as returned, with no model text."""
-    lang = state["language"]
-    lines = [prompts.NO_LLM[lang]]
-    for r in state["tool_records"]:
-        if r["status"] == "ok":
-            lines.append(f"- {footer.describe_call(r, lang)}: {r['result_text']}")
-    if len(lines) == 1:
-        lines.append(prompts.NO_RESULTS[lang])
-    return "\n".join(lines)
 
 
 # Routing

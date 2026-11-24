@@ -45,6 +45,7 @@ class Candidate:
     label: str
     until: str | None = None  # last month the source value covers (R5)
     based_on: tuple[int, ...] = ()  # calculator result: the calls its inputs came from
+    month: str | None = None  # YYYY-MM of the source row, for values given per month
 
     @property
     def call(self) -> int | None:
@@ -77,7 +78,7 @@ def candidates(sources: Sources) -> list[Candidate]:
     """Every source value, plus its whitelisted conversions."""
     out = []
     for s in sources.numbers:
-        out.append(Candidate(s.value, s.unit, s.label, s.until, s.based_on))
+        out.append(Candidate(s.value, s.unit, s.label, s.until, s.based_on, s.month))
         if s.unit == "bbl/d":
             out.append(Candidate(s.value * BBL_TO_M3, "m3/d", f"{s.label} x {BBL_TO_M3} m3/bbl",
                                  s.until, s.based_on))

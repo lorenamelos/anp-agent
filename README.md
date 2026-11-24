@@ -52,7 +52,7 @@ start ─> agent ⇄ tools              anp-mcp over stdio, and the local calcul
          agent ─> guardrail (R1) ─> finalize                notices and footer
                   guardrail ─> feedback ─> agent            one regeneration, if it fits
                   guardrail ─> redact ─> finalize           otherwise
-         agent ─> finalize          no LLM call fits: the tool results as returned
+         agent ─> finalize          no LLM call fits: a readable list of the values obtained
          tools ─> finalize          server unavailable: a fixed answer, no model numbers
 ```
 
@@ -60,11 +60,11 @@ start ─> agent ⇄ tools              anp-mcp over stdio, and the local calcul
 |---|---|
 | `graph.py` | Nodes, routing and the per-question run |
 | `guardrail/` | `extract.py` (numbers, units, ranges, hedges, dates in pt-BR and en), `sources.py` (what an answer may cite), `match.py` (rounding-aware matching), `redact.py` |
-| `calculator.py` | Exact arithmetic; rejects any input that is not already in the sources |
+| `calculator.py` | Exact arithmetic, including a year's volume from monthly rates; rejects any input that is not already in the sources |
 | `mcp_client.py` | `AnpToolbox`: stdio client, version check, warm-up, timeouts, one restart |
 | `budget.py`, `config.py` | Token accounting, the projection before each call, the call caps; settings |
 | `llm.py` | The provider switch; usage from the raw API `usage` block |
-| `footer.py`, `prompts.py` | Deterministic texts in pt/en; the system prompt |
+| `footer.py`, `prompts.py`, `emergency.py` | Deterministic texts in pt/en; the system prompt; the answer when no LLM call fits |
 
 ## Quick start
 
