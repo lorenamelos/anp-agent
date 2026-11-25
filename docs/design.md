@@ -1,7 +1,7 @@
 # anp-agent: design
 
-Status: **implemented through the command line (section 5); the live evals (section 4) are
-next.** Decisions are recorded in section 6. The calculator (D1) was implemented after the
+Status: **v0.1.0 implemented and evaluated: final runs of instruments v3 and agent-v1 on
+`567640b` (section 4.5.3).** Decisions are recorded in section 6. The calculator (D1) was implemented after the
 offline guardrail replay in section 4.4 was reviewed.
 
 ## 0. Scope and fixed constraints
@@ -716,10 +716,65 @@ instrument.
 - Cost: US$ 0.2166 (solver US$ 0.0305, grader US$ 0.1861), US$ 0.0020 solver per answer,
   12.8 s per answer. The cases are the heavy ones, so not comparable with 4.5.1's means.
 
-**Before the repository goes public:** one final full run of instrument v3 and of agent-v1
-on the same commit, and the README numbers taken from those two runs. D22, D23, D26 and D27
-change the prompts, so they change the behaviour on every case, and the results above
-(v3 at `63c01b9`, agent-v1 at `fca876e`, and the run of the affected cases) predate them.
+### 4.5.3 Results: final runs, v3 and agent-v1 on one commit (2026-11-25)
+
+The step planned before going public: both instruments on the same commit, after D22–D27
+changed the prompts. These are the numbers in the README. Agent `567640b`, anp-mcp
+`a313249`, Haiku 5.5 solver, Sonnet 5.5 grader, dataset v2026.09, 3 repeats. Every failure
+was read by hand (4.3) before it was counted.
+
+**v3** (`20261125T000219Z`): 62/63. 0 failures for a wrong number, 0 `ungrounded`.
+
+- q10 r2, the one failure, labelled `wrong_number` by the grader: every number is right
+  (+67,374 bbl/d, +209.8%, 32,119 → 99,492). The error is the statement "in absolute volume
+  it was behind only Búzios", when the `top_changes` result in the same answer put Mero
+  (+97,346) ahead; the grader also rejected "the highest percentage rise but Wahoo", which
+  a top 10 by absolute change cannot support. A statement R1 does not check (D23 asks for
+  it in the prompt only).
+- R1 flagged 1 draft (q11 r2, three means computed by the model); the regeneration fixed it
+  with `calculate`, and its text has no sentence about the note (D27; the only regenerated
+  text of the two runs, so one observation). No redaction.
+- Calculator in 17 answers, 29 calls, none rejected. No call refused by a cap, no token
+  limit. Tokens 11,439 / 20,142 / 29,558 (mean / p95 / max), against 12,302 / 27,080 /
+  31,878 at `63c01b9`; solver US$ 0.00068 per answer (+11% on the harness run), 5.4 s.
+- Cost US$ 0.5413 (solver US$ 0.0429, grader US$ 0.4983).
+
+**agent-v1** (`20261125T002230Z`, 14 cases): 35/42. By case: a01 2/3, a02 1/3, a03 2/3,
+a05 1/3, a10 2/3, every other case 3/3. The 7 failures, by hand; none is a wrong number:
+
+- **a02 r0, r2 (`incomplete`): a regression from D22.** All three repeats ran
+  `top_changes(n=5)`, then `search_field_groups` on each of the 5 names it returned, used
+  the 6 calls and had the 5 `field_group_production` lookups refused. At `fca876e`, before
+  D22, all three ran `top_changes` and the 5 lookups and passed. r1 did the same as r0 and
+  r2 and passed: the rubric accepts saying which fields were not checked, and the grader
+  applied that to r1 only. Proposed for the next version: search only names that come from
+  the question; names copied from a tool result are already exact.
+- **a01 r0 (`incomplete`): a calculator defect.** `ratio` with `unit: "%"` was rejected
+  four times: `unit` is read as the unit of the inputs, so 1,197,657 was looked for as a
+  percentage, and the message said it was not in the tool results. All 7 calculator
+  rejections of the run are this (a01 r0 ×4; a04 r2 ×3, which passed on the absolute
+  difference alone, with no percentage).
+  Proposed: take `%` as the result's unit on `ratio` and `percent_change`, or name the unit
+  mismatch in the error.
+- **a03 r0 (`incomplete`): a regeneration spent on a refused call.** The first draft
+  (`draft_before_regen`) was right and complete; its "287 mil bbl/d" (837,532 − 550,143 =
+  287,389) was computed by the model after `annual_volume` ×2 and `mean` ×2 had used the 4
+  calculator calls. The regeneration asked for `calculate(difference)`, refused by the
+  cap; the next LLM call did not fit in the 40,000 tokens (33,494 used), so the answer was
+  the emergency text (D25). Proposed: when a cap is already reached, send the regeneration
+  in final mode, so it ends in text.
+- **a05 r1, r2 (`incomplete`):** the known limit (4.5.2): no tool ranks by 2025.
+- **a10 r2 (`ungrounded`):** "the data covers oil and gas production"; the server
+  instructions say gas is not covered. A statement.
+
+Calculator in 20 answers, 39 calls, 7 rejected (above). R4 reached in 7 answers (a02 ×3,
+a03 r0, a05 ×3); token limit in a03 r0 and a05 r2. Token projection: 94 follow-up calls,
+none below the actual prompt (minimum 40 above); 116 in v3, minimum 49. Tokens 14,290 /
+25,717 / 33,494; solver US$ 0.00102 per answer, 7.7 s. Cost US$ 0.4107 (solver US$ 0.0428,
+grader US$ 0.3679).
+
+The three defects are left in this version on purpose, so that the published results
+measure the published code; they are listed in the README's known limits.
 
 Future idea, not done: the cache breakpoint covers only the tools and the system prompt
 (2,515 tokens), so the conversation history is re-sent uncached on every turn. A breakpoint

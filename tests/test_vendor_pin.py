@@ -9,6 +9,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 VENDOR = ROOT / "vendor" / "anp-mcp"
 TAG = "v0.1.0"
+TAG_COMMIT = "a3132497e765657a31a1e7d2d32bbe01ee1b42d0"  # v0.1.0; CI checkouts carry no tags
 
 
 def git(*args: str) -> str:
@@ -22,7 +23,7 @@ def test_vendor_is_checked_out():
 
 
 def test_vendor_is_at_the_tag():
-    assert git("describe", "--tags", "--exact-match") == TAG
+    assert git("rev-parse", "HEAD") == TAG_COMMIT
 
 
 def test_vendor_has_no_local_changes():

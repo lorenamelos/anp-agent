@@ -104,85 +104,78 @@ The anp-mcp server's own variables (`ANP_MCP_REVISION`, `ANP_MCP_DATA_DIR`) are 
 
 ## Results
 
-The agent ran anp-mcp's eval instrument v3 (21 questions, 3 repeats each, the same grader,
-ground truth and prices as anp-mcp's own runs) with Claude Haiku 5.5, next to anp-mcp's Haiku
-v3 run, which used the plain tool loop of its harness:
+Final runs on one commit (`567640b`), Claude Haiku 5.5 as the solver, Sonnet 5.5 as the
+grader, 3 repeats per question. Every failure was read by hand before it was counted (the
+grader's labels are model output too; see below).
+
+### Instrument v3 (anp-mcp's 21 questions)
+
+The same questions, ground truth, grader and prices as anp-mcp's own Haiku v3 run, which used
+the plain tool loop of its harness:
 
 | | anp-mcp harness (v3) | agent |
 |---|---|---|
-| Pass rate | 87% (55/63) | 90% (57/63) |
-| Failed for a wrong number (`wrong_number`) | **5** | **0** |
-| Failed as `ungrounded` | 2 | 3 (none of them a number) |
-| Other failures | 1 `other` | 3 `incomplete` |
-| Solver cost per answer | US$ 0.00061 | US$ 0.00087 (+43%) |
-| Tokens per answer (mean / p95 / max) | 7,350 / 13,018 / 17,107 | 12,302 / 27,080 / 31,878 (+67% mean) |
-| Seconds per answer | 5.3 | 6.3 (+1 s) |
+| Pass rate | 87% (55/63) | 98% (62/63) |
+| Failed for a wrong number | **5** | **0** (1 labelled `wrong_number`; its numbers are right) |
+| Failed as `ungrounded` | 2 | 0 |
+| Other failures | 1 `other` | 0 |
+| Solver cost per answer | US$ 0.00061 | US$ 0.00068 (+11%) |
+| Tokens per answer (mean / p95 / max) | 7,350 / 13,018 / 17,107 | 11,439 / 20,142 / 29,558 (+56% mean) |
+| Seconds per answer | 5.3 | 5.4 |
 
 **The main finding: no answer failed for a wrong number, against 5 in the harness run.** The
-pass rates (90% against 87%) differ by 2 answers in 63, which is not a significant
-difference. The price is +43% solver cost per answer, +67% tokens and +1 s, from the extra
-turns for the calculator and the regenerations.
+pass rates differ by 7 answers in 63; the 3 repeats of a question are not independent, so
+read it as a direction, not a measured gain.
 
-- The 3 `ungrounded` failures are statements, not numbers ("Sul de Tupi is a separate
-  group", "Bacalhau was the second", what Maricá's royalties are based on): the known limit
-  of R1, which checks numbers only.
-- 2 of the 3 `incomplete` are the same question (the worst month of the national
-  reconciliation), where the model asked for the full month-by-month detail and the history
-  it re-sends hit the 40,000-token limit; the agent then answered with the raw tool results.
-  The prompt now asks for that detail only when the question needs it.
-- The guardrail flagged 4 drafts; one regeneration fixed 3 of them, and 1 number was
-  redacted (that answer still passed). The calculator was used in 21 answers (35 calls, 1
-  rejected input). No call was refused by the call caps.
+- The one failure (q10 r2, "Did Bacalhau grow? By how much?") has every number right: the
+  error is a statement, "in absolute volume it was behind only Búzios", when the tool's own
+  ranking put Mero ahead. The grader labelled it `wrong_number`; R1 checks numbers, not
+  rankings.
+- The guardrail flagged 1 draft; the regeneration fixed it. No number was redacted. The
+  calculator was used in 17 answers (29 calls, none rejected). No answer hit a call cap or
+  the token limit.
 
-The grader reads the model's text after redaction, without the notices and the footer, as
-the harness graded the model's text (details in [agent_evals/README.md](agent_evals/README.md)).
-Total cost of the run, grader included: US$ 0.63.
+### Instrument agent-v1 (the agent's own 14 questions)
 
-### Instrument agent-v1 (first run)
-
-The agent's own 13 questions ([agent_evals/cases_agent.yaml](agent_evals/cases_agent.yaml)),
-3 repeats, same grader and prices; not comparable with the v3 table above:
+[agent_evals/cases_agent.yaml](agent_evals/cases_agent.yaml); not comparable with the table
+above:
 
 | Category | Cases | Passed |
 |---|---|---|
-| multi-step | a01–a04 | 10/12 (a03: 1/3) |
+| multi-step | a01–a04 | 8/12 |
 | budget stress | a05 | 1/3 |
-| refusals | a06–a09 | 11/12 (a08: 2/3) |
-| partial refusal | a10 | 3/3 |
+| refusals | a06–a09 | 12/12 |
+| partial refusal | a10 | 2/3 |
 | over-refusal check | a11 | 3/3 |
-| derivation | a12 | 0/3 |
-| regression (v3 q17) | a13 | 3/3 |
-| **all** | | **31/39 (79%)** |
+| derivation (Búzios in barrels per year) | a12 | 3/3 |
+| regression (v3 q17, token limit) | a13 | 3/3 |
+| tool gap (a field that does not exist) | a14 | 3/3 |
+| **all** | | **35/42 (83%)** |
 
-- The v3 question that hit the token limit (a13) passed 3/3; the prompt change worked: no
-  repeat asked for the month-by-month reconciliation detail.
-- Again no failure for a wrong number. The failures are budget limits (7 of 8) and
-  statements R1 does not check (a08, and a05 naming unfetched fields from memory).
-- The derivation question (a12, Búzios in barrels per year) failed 3/3: the model converted
-  several years one calculator call at a time and ran out of the 4 calculator calls.
+The 7 failures, read by hand. None is a wrong number:
 
-Cost: US$ 0.45 for the 39 answers, grader included.
+- **a02 r0, r2** (the top 5 risers, then their wells): a regression from the rule that asks
+  for `search_field_groups` before every lookup. The model searched the 5 names that
+  `top_changes` had just returned, used the 6 calls, and had the 5 well lookups refused. r1
+  did the same and passed, as the rubric accepts saying what was not checked. Before the
+  rule, a02 passed 3/3 with `top_changes` and 5 lookups. See Known limits.
+- **a01 r0** (Búzios' share of the national total): the calculator rejected the ratio four
+  times because the model passed `unit: "%"`, the unit of the result, which the calculator
+  reads as the unit of the inputs. The answer gave both inputs, right, and no share. Seven
+  calculator rejections in the run, all this case of `ratio` or `percent_change`.
+- **a03 r0** (did Lula produce more than Mero in 2025): the first draft was right and
+  complete, but its difference (287 thousand bbl/d) did not come from `calculate`, whose 4
+  calls were spent. The regeneration asked for one more calculation, which the cap refused,
+  and the next LLM call did not fit in the 40,000 tokens, so the answer was the
+  deterministic list of values, with no conclusion.
+- **a05 r1, r2** (the 10 largest fields of 2025, month by month): no tool ranks by a past
+  year within the call cap (Known limits).
+- **a10 r2**: "the data covers oil and gas production"; the tools cover no gas. A statement,
+  which R1 does not check.
 
-After fixes for these failures (`search_field_groups` before every lookup, an
-`annual_volume` calculator operation, a readable emergency answer, periods left open stated
-in the answer), the affected cases ran again, with a new one, a field that does not exist
-(a14):
-
-| Case | First run | After the fixes |
-|---|---|---|
-| a03 Lula vs Mero | 1/3 | 3/3 |
-| a05 budget stress | 1/3 | 0/3 |
-| a08 investment advice | 2/3 | 2/3 |
-| a12 Búzios per year | 0/3 | 3/3 |
-| a14 nonexistent field | | 3/3 |
-
-- One failure was labelled `wrong_number` by the grader (a08). No number in that answer is
-  wrong: the grader's reason is a stray sentence left by a regeneration and a removal, and
-  a statement about the onshore trend. Details in the design, section 4.5.2.
-- a05 asks for the 10 largest fields of 2025, and no tool ranks by a past year within the
-  call cap; the agent ranked by the latest month and said so. See Known limits.
-
-These numbers are partial (5 cases) and predate the final runs on one commit.
+Cost of the two final runs, grader included: US$ 0.54 (v3, 63 answers) and US$ 0.41
+(agent-v1, 42 answers). Earlier runs, and the fixes made between them, are in
+[docs/design.md](docs/design.md), section 4.5.
 
 ## Checking the check
 
@@ -224,6 +217,19 @@ more field groups than the 6-call cap allows, so the agent can only rank by a st
 
 Removing a number can leave a sentence that reads badly ("[não confirmado]" in place of a
 range), most often in final mode, where there is no regeneration.
+
+Found in the final runs, not fixed in this version (the published results measure this
+commit):
+
+- **The search-first rule costs calls on names a tool already returned** (a02). The prompt
+  asks for `search_field_groups` before every `field_group_production`, which was meant for
+  names typed by the user ("Lula" is in the TUPI group). Proposed: search only names that
+  come from the question; names from a tool result are already exact.
+- **`unit: "%"` on `ratio` or `percent_change` is rejected** with a message that says the
+  value is not in the results (a01, a04). Proposed: take `%` there as the result's unit, or
+  say in the error that the value was found in another unit.
+- **A regeneration can be spent on a call the cap refuses** (a03). Proposed: when a cap is
+  already reached, send the regeneration in final mode (no tools), so it ends in text.
 
 ## Development
 
